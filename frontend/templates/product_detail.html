@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.title }} - SmartReco{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('products') }}">Products</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ product.title }}</li>
+        </ol>
+    </nav>
+    
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h2 class="card-title mb-0">{{ product.title }}</h2>
+                        <span class="badge bg-primary fs-6">{{ product.category }}</span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <span class="h4 text-primary">${{ product.price }}</span>
+                        <span class="text-muted ms-3">
+                            <i class="fas fa-star text-warning"></i> 4.5 (127 reviews)
+                        </span>
+                    </div>
+                    
+                    <h5>Description</h5>
+                    <p class="text-muted">{{ product.description }}</p>
+                    
+                    <hr>
+                    
+                    <h5>What You'll Learn</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check-circle text-success me-2"></i> Master core concepts</li>
+                        <li><i class="fas fa-check-circle text-success me-2"></i> Hands-on projects</li>
+                        <li><i class="fas fa-check-circle text-success me-2"></i> Real-world applications</li>
+                        <li><i class="fas fa-check-circle text-success me-2"></i> Expert insights</li>
+                    </ul>
+                    
+                    <div class="mt-4">
+                        <button class="btn btn-primary btn-lg me-2">
+                            <i class="fas fa-shopping-cart me-2"></i>Enroll Now
+                        </button>
+                        <button class="btn btn-outline-secondary btn-lg">
+                            <i class="far fa-heart me-2"></i>Save for Later
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Related Recommendations -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0"><i class="fas fa-gift text-primary me-2"></i>You Might Also Like</h6>
+                </div>
+                <div class="card-body">
+                    {% if similar_products %}
+                        {% for similar in similar_products %}
+                        <div class="mb-3 pb-3 border-bottom">
+                            <a href="{{ url_for('product_detail', product_id=similar.id) }}" class="text-decoration-none">
+                                <h6 class="mb-1">{{ similar.title }}</h6>
+                                <span class="text-muted small">{{ similar.category }}</span>
+                                <span class="float-end fw-bold text-primary">${{ similar.price }}</span>
+                            </a>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center py-3">No similar products found</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Track product view with time spent
+let viewStartTime = Date.now();
+
+document.addEventListener('DOMContentLoaded', function() {
+    const productId = {{ product.id }};
+    const productTitle = '{{ product.title }}';
+    
+    if (typeof trackEvent === 'function') {
+        trackEvent('view', productId, productTitle);
+    }
+});
+
+// Track time spent on page
+window.addEventListener('beforeunload', function() {
+    const timeSpent = Math.floor((Date.now() - viewStartTime) / 1000);
+    if (timeSpent > 5 && typeof trackEvent === 'function') {
+        trackEvent('time_spent', {{ product.id }}, '{{ product.title }}', { 
+            seconds: timeSpent 
+        });
+    }
+});
+</script>
+{% endblock %}

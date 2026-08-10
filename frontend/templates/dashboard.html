@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - SmartReco{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="mb-1">Welcome back, {{ session.username or 'User' }}! 👋</h2>
+            <p class="text-muted">Here's what we've prepared for you today</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <span class="badge bg-primary p-2">
+                <i class="fas fa-robot me-1"></i> AI Agent Active
+            </span>
+        </div>
+    </div>
+    
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card bg-gradient-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-uppercase fw-light">Products Viewed</h6>
+                            <h3 class="mb-0">{{ stats.viewed_products or 0 }}</h3>
+                        </div>
+                        <i class="fas fa-eye fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-gradient-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-uppercase fw-light">Searches</h6>
+                            <h3 class="mb-0">{{ stats.searches or 0 }}</h3>
+                        </div>
+                        <i class="fas fa-search fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-gradient-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-uppercase fw-light">Recommendations</h6>
+                            <h3 class="mb-0">{{ stats.recommendations or 0 }}</h3>
+                        </div>
+                        <i class="fas fa-gift fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-gradient-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-uppercase fw-light">Interests</h6>
+                            <h3 class="mb-0">{{ stats.interests or 0 }}</h3>
+                        </div>
+                        <i class="fas fa-heart fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- AI Recommendation Section -->
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Latest AI Recommendation -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-robot text-primary me-2"></i>
+                        AI-Powered Recommendation
+                    </h5>
+                    <span class="badge bg-success">Fresh</span>
+                </div>
+                <div class="card-body">
+                    {% if latest_recommendation %}
+                    <div class="recommendation-content">
+                        <div class="persuasive-message p-3 bg-light rounded mb-3">
+                            <p class="mb-0">{{ latest_recommendation.message }}</p>
+                        </div>
+                        <h6>Recommended for you:</h6>
+                        <div class="row">
+                            {% for product in latest_recommendation.products %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h6 class="card-title">{{ product.title }}</h6>
+                                        <p class="card-text small text-muted">{{ product.description[:100] }}...</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="badge bg-primary">{{ product.category }}</span>
+                                            <span class="fw-bold">${{ product.price }}</span>
+                                        </div>
+                                        <a href="{{ url_for('product_detail', product_id=product.id) }}" 
+                                           class="btn btn-sm btn-outline-primary mt-2 w-100">View Details</a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-spinner fa-3x text-primary mb-3"></i>
+                        <p>We're analyzing your behavior to generate personalized recommendations.</p>
+                        <p class="text-muted">Browse some products to get started!</p>
+                        <a href="{{ url_for('products') }}" class="btn btn-primary">Explore Products</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Recent Activity -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-history me-2"></i>Recent Activity</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_activity %}
+                    <div class="timeline">
+                        {% for activity in recent_activity %}
+                        <div class="timeline-item d-flex mb-3">
+                            <div class="timeline-icon me-3">
+                                {% if activity.event_type == 'view' %}
+                                <i class="fas fa-eye text-primary"></i>
+                                {% elif activity.event_type == 'search' %}
+                                <i class="fas fa-search text-success"></i>
+                                {% elif activity.event_type == 'click' %}
+                                <i class="fas fa-mouse-pointer text-warning"></i>
+                                {% else %}
+                                <i class="fas fa-circle text-secondary"></i>
+                                {% endif %}
+                            </div>
+                            <div class="timeline-content flex-grow-1">
+                                <p class="mb-0">
+                                    <strong>{{ activity.event_type|title }}</strong>
+                                    {% if activity.product_title %}
+                                    - {{ activity.product_title }}
+                                    {% endif %}
+                                </p>
+                                <small class="text-muted">{{ activity.created_at|timesince }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-3">No activity tracked yet. Start exploring!</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h6 class="card-title">Quick Actions</h6>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('products') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-search me-2"></i>Browse Products
+                        </a>
+                        <a href="{{ url_for('recommendations') }}" class="btn btn-outline-success">
+                            <i class="fas fa-gift me-2"></i>View All Recommendations
+                        </a>
+                        <button class="btn btn-outline-info" onclick="refreshRecommendations()">
+                            <i class="fas fa-sync-alt me-2"></i>Refresh Recommendations
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Behavior Insights -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0"><i class="fas fa-chart-line me-2"></i>Behavior Insights</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between">
+                            <span>AI/ML Content</span>
+                            <span class="badge bg-primary">{{ insights.ai_ml || 0 }}%</span>
+                        </div>
+                        <div class="progress" style="height: 5px;">
+                            <div class="progress-bar" role="progressbar" style="width: {{ insights.ai_ml || 0 }}%"></div>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between">
+                            <span>Development</span>
+                            <span class="badge bg-success">{{ insights.development || 0 }}%</span>
+                        </div>
+                        <div class="progress" style="height: 5px;">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ insights.development || 0 }}%"></div>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between">
+                            <span>Data Science</span>
+                            <span class="badge bg-info">{{ insights.data_science || 0 }}%</span>
+                        </div>
+                        <div class="progress" style="height: 5px;">
+                            <div class="progress-bar bg-info" role="progressbar" style="width: {{ insights.data_science || 0 }}%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="d-flex justify-content-between">
+                            <span>Cloud Computing</span>
+                            <span class="badge bg-warning">{{ insights.cloud || 0 }}%</span>
+                        </div>
+                        <div class="progress" style="height: 5px;">
+                            <div class="progress-bar bg-warning" role="progressbar" style="width: {{ insights.cloud || 0 }}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Mesh API Status -->
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-cloud-upload-alt fa-2x text-primary mb-2"></i>
+                    <p class="mb-0 small">AI Powered by</p>
+                    <img src="https://meshapi.ai/logo.png" alt="Mesh API" style="max-height: 30px;">
+                    <div class="mt-2">
+                        <span class="badge bg-success">Active</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function refreshRecommendations() {
+    const btn = event.target.closest('button');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Refreshing...';
+    
+    fetch('/api/refresh-recommendations', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Failed to refresh recommendations. Please try again.');
+        }
+    })
+    .catch(error => {
+        alert('Error refreshing recommendations.');
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-sync-alt me-2"></i>Refresh Recommendations';
+    });
+}
+</script>
+{% endblock %}

@@ -1,9 +1,10 @@
 
 from datetime import datetime
-from typing import List
-from database.models.product import Product
-from database.models.recommendation import Recommendation
-from database.models.user_event import UserActivity
+from typing import TYPE_CHECKING, List
+
+if TYPE_CHECKING:
+    from src.database.models.recommendation import Recommendation
+    from src.database.models.user_activity import UserActivity
 from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.orm import relationship,Mapped,mapped_column
 from src.database.db import Base

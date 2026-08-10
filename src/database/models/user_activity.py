@@ -1,11 +1,13 @@
-import datetime
-
-from database.models.user import User
-from sqlalchemy import Column, Integer, String, DateTime
-from sqlalchemy.orm import relationship, Mapped, mapped_column
 from datetime import datetime
-from database.models.product import Product
+from typing import TYPE_CHECKING
+
+from sqlalchemy import Integer, String, DateTime
+from sqlalchemy.orm import relationship, Mapped, mapped_column
 from src.database.db import Base
+
+if TYPE_CHECKING:
+    from src.database.models.product import Product
+    from src.database.models.user import User
 
 
 class UserActivity(Base):

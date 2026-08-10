@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Products - SmartReco{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="fas fa-boxes me-2"></i>Manage Products</h2>
+            <p class="text-muted">Add, edit, or remove products from your catalog</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#productModal">
+                <i class="fas fa-plus me-2"></i>Add Product
+            </button>
+        </div>
+    </div>
+    
+    <!-- Product List -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Title</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in products %}
+                        <tr>
+                            <td>{{ product.id }}</td>
+                            <td>{{ product.title }}</td>
+                            <td><span class="badge bg-primary">{{ product.category }}</span></td>
+                            <td>${{ product.price }}</td>
+                            <td>
+                                <span class="badge bg-success">Synced</span>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" 
+                                        onclick="editProduct({{ product.id }})">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" 
+                                        onclick="deleteProduct({{ product.id }})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Product Modal -->
+<div class="modal fade" id="productModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="productModalTitle">Add Product</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="productForm" method="POST" action="{{ url_for('manage_products') }}">
+                    <input type="hidden" id="productId" name="product_id">
+                    
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="title" name="title" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                    </div>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="category" class="form-label">Category</label>
+                            <select class="form-select" id="category" name="category" required>
+                                <option value="">Select category</option>
+                                <option value="ai-machine-learning">AI & Machine Learning</option>
+                                <option value="data-science">Data Science</option>
+                                <option value="development">Development</option>
+                                <option value="cloud-computing">Cloud Computing</option>
+                                <option value="cybersecurity">Cybersecurity</option>
+                                <option value="devops">DevOps</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="price" class="form-label">Price ($)</label>
+                            <input type="number" class="form-control" id="price" name="price" step="0.01" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3 mt-3">
+                        <label for="vector_status" class="form-label">Vector Database Sync</label>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="vector_sync" checked disabled>
+                            <label class="form-check-label" for="vector_sync">Auto-sync to vector database</label>
+                        </div>
+                        <small class="text-muted">Products are automatically dual-written to SQL and vector DB</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitProduct()">
+                    <i class="fas fa-save me-2"></i>Save Product
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let productModal = new bootstrap.Modal(document.getElementById('productModal'));
+
+function editProduct(id) {
+    // Fetch product data and populate form
+    fetch(`/api/admin/product/${id}`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('productModalTitle').textContent = 'Edit Product';
+            document.getElementById('productId').value = data.id;
+            document.getElementById('title').value = data.title;
+            document.getElementById('description').value = data.description;
+            document.getElementById('category').value = data.category;
+            document.getElementById('price').value = data.price;
+            productModal.show();
+        })
+        .catch(error => {
+            alert('Error loading product data');
+        });
+}
+
+function deleteProduct(id) {
+    if (!confirm('Delete this product? This will also remove it from the vector database.')) return;
+    
+    fetch(`/api/admin/product/${id}`, {
+        method: 'DELETE'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Failed to delete product');
+        }
+    })
+    .catch(error => {
+        alert('Error deleting product');
+    });
+}
+
+function submitProduct() {
+    const form = document.getElementById('productForm');
+    const formData = new FormData(form);
+    
+    fetch(form.action, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Failed to save product: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Error saving product');
+    });
+}
+
+// Reset modal when hidden
+document.getElementById('productModal').addEventListener('hidden.bs.modal', function() {
+    document.getElementById('productForm').reset();
+    document.getElementById('productId').value = '';
+    document.getElementById('productModalTitle').textContent = 'Add Product';
+});
+</script>
+{% endblock %}

@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Products - SmartReco{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>Explore Our Courses</h2>
+            <p class="text-muted">Discover learning opportunities tailored to you</p>
+        </div>
+        <div class="col-md-4">
+            <form action="{{ url_for('products') }}" method="GET" class="d-flex">
+                <input type="text" name="q" class="form-control me-2" placeholder="Search courses..." 
+                       value="{{ search_query or '' }}" id="searchInput">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Category Filter -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{{ url_for('products') }}" class="btn btn-outline-primary btn-sm {% if not current_category %}active{% endif %}">
+                    All
+                </a>
+                {% for category in categories %}
+                <a href="{{ url_for('products', category=category) }}" 
+                   class="btn btn-outline-primary btn-sm {% if current_category == category %}active{% endif %}">
+                    {{ category|title }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Products Grid -->
+    <div class="row g-4">
+        {% if products %}
+            {% for product in products %}
+            <div class="col-md-4 col-lg-3">
+                <div class="card h-100 product-card" data-product-id="{{ product.id }}" data-product-title="{{ product.title }}">
+                    <div class="card-body">
+                        <div class="product-badge">
+                            <span class="badge bg-primary">{{ product.category }}</span>
+                        </div>
+                        <h5 class="card-title mt-2">{{ product.title }}</h5>
+                        <p class="card-text small text-muted">{{ product.description[:100] }}...</p>
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <span class="h5 mb-0 text-primary">${{ product.price }}</span>
+                            <span class="small text-muted">
+                                <i class="fas fa-star text-warning"></i> 4.5
+                            </span>
+                        </div>
+                        <a href="{{ url_for('product_detail', product_id=product.id) }}" 
+                           class="btn btn-outline-primary w-100 mt-3 btn-view-product">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12 text-center py-5">
+                <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                <h4>No products found</h4>
+                <p class="text-muted">Try adjusting your search or category filter</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Track product views
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.product-card');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const card = entry.target;
+                const productId = card.dataset.productId;
+                const productTitle = card.dataset.productTitle;
+                
+                // Track view
+                if (typeof trackEvent === 'function') {
+                    trackEvent('view', productId, productTitle);
+                }
+                
+                // Unobserve after tracking
+                observer.unobserve(card);
+            }
+        });
+    }, { threshold: 0.5 });
+    
+    cards.forEach(card => observer.observe(card));
+});
+
+// Track product clicks
+document.querySelectorAll('.btn-view-product').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        const card = this.closest('.product-card');
+        const productId = card.dataset.productId;
+        const productTitle = card.dataset.productTitle;
+        
+        if (typeof trackEvent === 'function') {
+            trackEvent('click', productId, productTitle);
+        }
+    });
+});
+
+// Track search
+document.getElementById('searchInput')?.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        const query = this.value.trim();
+        if (query && typeof trackEvent === 'function') {
+            trackEvent('search', null, null, { query: query });
+        }
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Your Recommendations - SmartReco{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>Your Personalized Recommendations</h2>
+            <p class="text-muted">Curated just for you based on your behavior</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <button class="btn btn-primary" onclick="refreshRecommendations()">
+                <i class="fas fa-sync-alt me-2"></i>Refresh
+            </button>
+        </div>
+    </div>
+    
+    {% if recommendations %}
+        {% for rec in recommendations %}
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>
+                        <i class="fas fa-robot text-primary me-2"></i>
+                        <strong>AI Recommendation</strong>
+                    </span>
+                    <span class="badge bg-secondary">{{ rec.created_at|timesince }}</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="persuasive-message p-4 bg-light rounded mb-4">
+                    <i class="fas fa-quote-left text-primary opacity-50 me-2"></i>
+                    <p class="mb-0">{{ rec.message }}</p>
+                </div>
+                
+                <h6>Recommended Products:</h6>
+                <div class="row g-3">
+                    {% for product in rec.products %}
+                    <div class="col-md-4 col-lg-3">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h6 class="card-title">{{ product.title }}</h6>
+                                <span class="badge bg-primary mb-2">{{ product.category }}</span>
+                                <p class="card-text small text-muted">{{ product.description[:60] }}...</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="fw-bold text-primary">${{ product.price }}</span>
+                                    <a href="{{ url_for('product_detail', product_id=product.id) }}" 
+                                       class="btn btn-sm btn-outline-primary">View</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="card shadow-sm">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-gift fa-4x text-muted mb-3"></i>
+                <h4>No Recommendations Yet</h4>
+                <p class="text-muted">Browse some products to get personalized recommendations</p>
+                <a href="{{ url_for('products') }}" class="btn btn-primary">Explore Products</a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function refreshRecommendations() {
+    const btn = event.target.closest('button');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Generating...';
+    
+    fetch('/api/refresh-recommendations', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Failed to generate recommendations. Please try again.');
+        }
+    })
+    .catch(error => {
+        alert('Error generating recommendations.');
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-sync-alt me-2"></i>Refresh';
+    });
+}
+</script>
+{% endblock %}

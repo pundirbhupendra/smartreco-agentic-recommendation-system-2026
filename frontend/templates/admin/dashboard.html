@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - SmartReco{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="fas fa-crown text-warning me-2"></i>Admin Dashboard</h2>
+            <p class="text-muted">Manage your platform and monitor system health</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{{ url_for('manage_products') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Add Product
+            </a>
+        </div>
+    </div>
+    
+    <!-- Stats -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h6 class="text-uppercase fw-light">Total Products</h6>
+                    <h3 class="mb-0">{{ stats.total_products }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6 class="text-uppercase fw-light">Total Users</h6>
+                    <h3 class="mb-0">{{ stats.total_users }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h6 class="text-uppercase fw-light">Total Events</h6>
+                    <h3 class="mb-0">{{ stats.total_events }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h6 class="text-uppercase fw-light">Recommendations</h6>
+                    <h3 class="mb-0">{{ stats.total_recommendations }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Activity & System Status -->
+    <div class="row g-4">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0"><i class="fas fa-history me-2"></i>Recent System Activity</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Event</th>
+                                    <th>Details</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for event in recent_events %}
+                                <tr>
+                                    <td>{{ event.username or 'Unknown' }}</td>
+                                    <td><span class="badge bg-primary">{{ event.event_type }}</span></td>
+                                    <td>{{ event.details or '-' }}</td>
+                                    <td>{{ event.created_at|timesince }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <!-- System Status -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0"><i class="fas fa-server me-2"></i>System Status</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between">
+                            <span>Vector DB</span>
+                            <span class="badge bg-success">Connected</span>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between">
+                            <span>Mesh API</span>
+                            <span class="badge bg-success">Active</span>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between">
+                            <span>Agent Status</span>
+                            <span class="badge bg-success">Running</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="d-flex justify-content-between">
+                            <span>Scheduler</span>
+                            <span class="badge bg-warning">Idle</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0"><i class="fas fa-tasks me-2"></i>Admin Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('manage_products') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-edit me-2"></i>Manage Products
+                        </a>
+                        <button class="btn btn-outline-success" onclick="triggerAgent()">
+                            <i class="fas fa-play me-2"></i>Run Agent on All Users
+                        </button>
+                        <button class="btn btn-outline-danger" onclick="clearCache()">
+                            <i class="fas fa-trash me-2"></i>Clear Cache
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function triggerAgent() {
+    if (!confirm('Run recommendation agent for all users? This may take a moment.')) return;
+    
+    const btn = event.target.closest('button');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Running...';
+    
+    fetch('/api/admin/trigger-agent', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert('Agent triggered successfully!');
+    })
+    .catch(error => {
+        alert('Error triggering agent.');
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-play me-2"></i>Run Agent on All Users';
+    });
+}
+
+function clearCache() {
+    if (!confirm('Clear all cached recommendations?')) return;
+    
+    fetch('/api/admin/clear-cache', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert('Cache cleared successfully!');
+    })
+    .catch(error => {
+        alert('Error clearing cache.');
+    });
+}
+</script>
+{% endblock %}

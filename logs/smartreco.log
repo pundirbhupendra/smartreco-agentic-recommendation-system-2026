@@ -1,1 +1,546 @@
 2026-08-10 13:11:06,317 | INFO | middleware.request_logging | request_logging.py:24 | GET /health → 404 | 0.74 ms
+2026-08-10 20:32:21,854 | INFO | middleware.request_logging | request_logging.py:24 | GET / → 200 | 62.00 ms
+2026-08-10 20:32:22,080 | INFO | middleware.request_logging | request_logging.py:24 | GET /static/css/style.css → 200 | 163.86 ms
+2026-08-10 20:32:22,082 | INFO | middleware.request_logging | request_logging.py:24 | GET /static/js/main.js → 200 | 160.94 ms
+2026-08-10 20:32:22,084 | INFO | middleware.request_logging | request_logging.py:24 | GET /static/js/tracking.js → 200 | 162.16 ms
+2026-08-10 20:32:26,289 | INFO | middleware.request_logging | request_logging.py:24 | GET /favicon.ico → 404 | 1.74 ms
+2026-08-10 20:32:29,408 | INFO | middleware.request_logging | request_logging.py:24 | POST /api/track-events → 200 | 3.47 ms
+2026-08-10 20:54:09,411 | INFO | middleware.request_logging | request_logging.py:24 | POST /api/track-events → 200 | 4.24 ms
+2026-08-10 20:54:14,407 | INFO | middleware.request_logging | request_logging.py:24 | POST /api/track-events → 200 | 4.36 ms
+2026-08-10 20:54:14,836 | INFO | middleware.request_logging | request_logging.py:24 | GET /login → 200 | 20.40 ms
+2026-08-10 20:54:14,877 | INFO | middleware.request_logging | request_logging.py:24 | POST /api/track-events → 200 | 20.83 ms
+2026-08-10 20:54:14,932 | INFO | middleware.request_logging | request_logging.py:24 | GET /static/css/style.css → 304 | 8.84 ms
+2026-08-10 20:54:14,940 | INFO | middleware.request_logging | request_logging.py:24 | GET /static/js/tracking.js → 304 | 14.66 ms
+2026-08-10 20:54:14,945 | INFO | middleware.request_logging | request_logging.py:24 | GET /static/js/main.js → 304 | 18.35 ms
+2026-08-10 20:54:20,052 | INFO | middleware.request_logging | request_logging.py:24 | POST /api/track-events → 200 | 2.35 ms
+2026-08-10 20:54:32,440 | INFO | middleware.request_logging | request_logging.py:24 | POST /api/track-events → 200 | 13.09 ms
+2026-08-10 20:54:48,925 | ERROR | src.database.db | db.py:23 | Error occurred while processing database request
+Traceback (most recent call last):
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\relationships.py", line 2435, in _determine_joins
+    self.primaryjoin = join_condition(
+                       ^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\sql\util.py", line 122, in join_condition
+    return Join._join_condition(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\sql\selectable.py", line 1452, in _join_condition
+    raise exc.NoForeignKeysError(
+sqlalchemy.exc.NoForeignKeysError: Can't find any foreign key relationships between 'users' and 'recommendations'.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\developer\smartreco-agentic-recommendation-system-2026\src\database\db.py", line 20, in get_db
+    yield db
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\fastapi\concurrency.py", line 29, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\fastapi\routing.py", line 101, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\fastapi\routing.py", line 355, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\fastapi\routing.py", line 243, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\developer\smartreco-agentic-recommendation-system-2026\src\routes\frontend.py", line 72, in login_submit
+    user = auth_service.authenticate_user(email, password)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\developer\smartreco-agentic-recommendation-system-2026\src\services\auth_service.py", line 74, in authenticate_user
+    user = self.user_repo.get_by_email(email)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\developer\smartreco-agentic-recommendation-system-2026\src\repositories\user_repository.py", line 20, in get_by_email
+    return self.db.query(User).filter(User.email == email).first()
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\session.py", line 2963, in query
+    return self._query_cls(entities, self, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\query.py", line 277, in __init__
+    self._set_entities(entities)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\query.py", line 290, in _set_entities
+    coercions.expect(
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\sql\coercions.py", line 389, in expect
+    insp._post_inspect
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 1234, in __get__
+    obj.__dict__[self.__name__] = result = self.fget(obj)
+                                           ^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\mapper.py", line 2734, in _post_inspect
+    self._check_configure()
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\mapper.py", line 2411, in _check_configure
+    _configure_registries({self.registry}, cascade=True)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\mapper.py", line 4228, in _configure_registries
+    _do_configure_registries(registries, cascade)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\mapper.py", line 4269, in _do_configure_registries
+    mapper._post_configure_properties()
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\mapper.py", line 2428, in _post_configure_properties
+    prop.init()
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\interfaces.py", line 595, in init
+    self.do_init()
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\relationships.py", line 1658, in do_init
+    self._setup_join_conditions()
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\relationships.py", line 1896, in _setup_join_conditions
+    self._join_condition = jc = JoinCondition(
+                                ^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\relationships.py", line 2322, in __init__
+    self._determine_joins()
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\relationships.py", line 2456, in _determine_joins
+    raise sa_exc.NoForeignKeysError(
+sqlalchemy.exc.NoForeignKeysError: Could not determine join condition between parent/child tables on relationship User.recommendations - there are no foreign keys linking these tables.  Ensure that referencing columns are associated with a ForeignKey or ForeignKeyConstraint, or specify a 'primaryjoin' expression.
+2026-08-10 20:54:48,992 | ERROR | middleware.request_logging | request_logging.py:37 | POST /login → ERROR | 69.96 ms
+Traceback (most recent call last):
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\relationships.py", line 2435, in _determine_joins
+    self.primaryjoin = join_condition(
+                       ^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\sql\util.py", line 122, in join_condition
+    return Join._join_condition(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\sql\selectable.py", line 1452, in _join_condition
+    raise exc.NoForeignKeysError(
+sqlalchemy.exc.NoForeignKeysError: Can't find any foreign key relationships between 'users' and 'recommendations'.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\developer\smartreco-agentic-recommendation-system-2026\src\middleware\request_logging.py", line 20, in dispatch
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\fastapi\routing.py", line 115, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\fastapi\routing.py", line 101, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\fastapi\routing.py", line 355, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\fastapi\routing.py", line 243, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\developer\smartreco-agentic-recommendation-system-2026\src\routes\frontend.py", line 72, in login_submit
+    user = auth_service.authenticate_user(email, password)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\developer\smartreco-agentic-recommendation-system-2026\src\services\auth_service.py", line 74, in authenticate_user
+    user = self.user_repo.get_by_email(email)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\developer\smartreco-agentic-recommendation-system-2026\src\repositories\user_repository.py", line 20, in get_by_email
+    return self.db.query(User).filter(User.email == email).first()
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\session.py", line 2963, in query
+    return self._query_cls(entities, self, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\query.py", line 277, in __init__
+    self._set_entities(entities)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\query.py", line 290, in _set_entities
+    coercions.expect(
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\sql\coercions.py", line 389, in expect
+    insp._post_inspect
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 1234, in __get__
+    obj.__dict__[self.__name__] = result = self.fget(obj)
+                                           ^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\mapper.py", line 2734, in _post_inspect
+    self._check_configure()
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\mapper.py", line 2411, in _check_configure
+    _configure_registries({self.registry}, cascade=True)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\mapper.py", line 4228, in _configure_registries
+    _do_configure_registries(registries, cascade)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\mapper.py", line 4269, in _do_configure_registries
+    mapper._post_configure_properties()
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\mapper.py", line 2428, in _post_configure_properties
+    prop.init()
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\interfaces.py", line 595, in init
+    self.do_init()
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\relationships.py", line 1658, in do_init
+    self._setup_join_conditions()
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\relationships.py", line 1896, in _setup_join_conditions
+    self._join_condition = jc = JoinCondition(
+                                ^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\relationships.py", line 2322, in __init__
+    self._determine_joins()
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\relationships.py", line 2456, in _determine_joins
+    raise sa_exc.NoForeignKeysError(
+sqlalchemy.exc.NoForeignKeysError: Could not determine join condition between parent/child tables on relationship User.recommendations - there are no foreign keys linking these tables.  Ensure that referencing columns are associated with a ForeignKey or ForeignKeyConstraint, or specify a 'primaryjoin' expression.
+2026-08-10 20:54:49,180 | INFO | middleware.request_logging | request_logging.py:24 | POST /api/track-events → 200 | 4.07 ms
+2026-08-10 20:54:55,864 | INFO | middleware.request_logging | request_logging.py:24 | POST /api/track-events → 200 | 3.39 ms
+2026-08-10 20:54:55,939 | INFO | middleware.request_logging | request_logging.py:24 | GET /signup → 200 | 73.79 ms
+2026-08-10 20:55:01,043 | INFO | middleware.request_logging | request_logging.py:24 | POST /api/track-events → 200 | 3.74 ms
+2026-08-10 20:55:04,269 | INFO | middleware.request_logging | request_logging.py:24 | GET / → 200 | 12.82 ms
+2026-08-10 20:55:09,351 | INFO | middleware.request_logging | request_logging.py:24 | POST /api/track-events → 200 | 6.34 ms
+2026-08-10 20:55:14,345 | INFO | middleware.request_logging | request_logging.py:24 | POST /api/track-events → 200 | 2.92 ms
+2026-08-10 20:55:24,342 | INFO | middleware.request_logging | request_logging.py:24 | POST /api/track-events → 200 | 2.33 ms
+2026-08-10 20:55:46,817 | INFO | middleware.request_logging | request_logging.py:24 | POST /api/track-events → 200 | 2.79 ms
+2026-08-10 20:55:46,846 | INFO | middleware.request_logging | request_logging.py:24 | GET /login → 200 | 15.13 ms
+2026-08-10 20:55:46,867 | INFO | middleware.request_logging | request_logging.py:24 | POST /api/track-events → 200 | 6.45 ms
+2026-08-10 20:55:51,901 | INFO | middleware.request_logging | request_logging.py:24 | POST /api/track-events → 200 | 2.03 ms
+2026-08-10 20:55:56,912 | INFO | middleware.request_logging | request_logging.py:24 | POST /api/track-events → 200 | 2.08 ms
+2026-08-10 20:56:07,982 | ERROR | src.database.db | db.py:23 | Error occurred while processing database request
+Traceback (most recent call last):
+  File "D:\developer\smartreco-agentic-recommendation-system-2026\src\database\db.py", line 20, in get_db
+    yield db
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\fastapi\concurrency.py", line 29, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\fastapi\routing.py", line 101, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\fastapi\routing.py", line 355, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\fastapi\routing.py", line 243, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\developer\smartreco-agentic-recommendation-system-2026\src\routes\frontend.py", line 72, in login_submit
+    user = auth_service.authenticate_user(email, password)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\developer\smartreco-agentic-recommendation-system-2026\src\services\auth_service.py", line 74, in authenticate_user
+    user = self.user_repo.get_by_email(email)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\developer\smartreco-agentic-recommendation-system-2026\src\repositories\user_repository.py", line 20, in get_by_email
+    return self.db.query(User).filter(User.email == email).first()
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\session.py", line 2963, in query
+    return self._query_cls(entities, self, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\query.py", line 277, in __init__
+    self._set_entities(entities)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\query.py", line 290, in _set_entities
+    coercions.expect(
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\sql\coercions.py", line 389, in expect
+    insp._post_inspect
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 1234, in __get__
+    obj.__dict__[self.__name__] = result = self.fget(obj)
+                                           ^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\mapper.py", line 2734, in _post_inspect
+    self._check_configure()
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\mapper.py", line 2411, in _check_configure
+    _configure_registries({self.registry}, cascade=True)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\mapper.py", line 4228, in _configure_registries
+    _do_configure_registries(registries, cascade)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\mapper.py", line 4265, in _do_configure_registries
+    raise e
+sqlalchemy.exc.InvalidRequestError: One or more mappers failed to initialize - can't proceed with initialization of other mappers. Triggering mapper: 'Mapper[User(users)]'. Original exception was: Could not determine join condition between parent/child tables on relationship User.recommendations - there are no foreign keys linking these tables.  Ensure that referencing columns are associated with a ForeignKey or ForeignKeyConstraint, or specify a 'primaryjoin' expression.
+2026-08-10 20:56:07,989 | ERROR | middleware.request_logging | request_logging.py:37 | POST /login → ERROR | 9.28 ms
+Traceback (most recent call last):
+  File "D:\developer\smartreco-agentic-recommendation-system-2026\src\middleware\request_logging.py", line 20, in dispatch
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\fastapi\routing.py", line 115, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\fastapi\routing.py", line 101, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\fastapi\routing.py", line 355, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\fastapi\routing.py", line 243, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\developer\smartreco-agentic-recommendation-system-2026\src\routes\frontend.py", line 72, in login_submit
+    user = auth_service.authenticate_user(email, password)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\developer\smartreco-agentic-recommendation-system-2026\src\services\auth_service.py", line 74, in authenticate_user
+    user = self.user_repo.get_by_email(email)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\developer\smartreco-agentic-recommendation-system-2026\src\repositories\user_repository.py", line 20, in get_by_email
+    return self.db.query(User).filter(User.email == email).first()
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\session.py", line 2963, in query
+    return self._query_cls(entities, self, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\query.py", line 277, in __init__
+    self._set_entities(entities)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\query.py", line 290, in _set_entities
+    coercions.expect(
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\sql\coercions.py", line 389, in expect
+    insp._post_inspect
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 1234, in __get__
+    obj.__dict__[self.__name__] = result = self.fget(obj)
+                                           ^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\mapper.py", line 2734, in _post_inspect
+    self._check_configure()
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\mapper.py", line 2411, in _check_configure
+    _configure_registries({self.registry}, cascade=True)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\mapper.py", line 4228, in _configure_registries
+    _do_configure_registries(registries, cascade)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\mapper.py", line 4265, in _do_configure_registries
+    raise e
+sqlalchemy.exc.InvalidRequestError: One or more mappers failed to initialize - can't proceed with initialization of other mappers. Triggering mapper: 'Mapper[User(users)]'. Original exception was: Could not determine join condition between parent/child tables on relationship User.recommendations - there are no foreign keys linking these tables.  Ensure that referencing columns are associated with a ForeignKey or ForeignKeyConstraint, or specify a 'primaryjoin' expression.
+2026-08-10 20:56:08,014 | INFO | middleware.request_logging | request_logging.py:24 | POST /api/track-events → 200 | 7.25 ms
+2026-08-10 20:57:12,800 | ERROR | src.database.db | db.py:23 | Error occurred while processing database request
+Traceback (most recent call last):
+  File "D:\developer\smartreco-agentic-recommendation-system-2026\src\database\db.py", line 20, in get_db
+    yield db
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\fastapi\concurrency.py", line 29, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\fastapi\routing.py", line 101, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\fastapi\routing.py", line 355, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\fastapi\routing.py", line 243, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\developer\smartreco-agentic-recommendation-system-2026\src\routes\frontend.py", line 72, in login_submit
+    user = auth_service.authenticate_user(email, password)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\developer\smartreco-agentic-recommendation-system-2026\src\services\auth_service.py", line 74, in authenticate_user
+    user = self.user_repo.get_by_email(email)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\developer\smartreco-agentic-recommendation-system-2026\src\repositories\user_repository.py", line 20, in get_by_email
+    return self.db.query(User).filter(User.email == email).first()
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\session.py", line 2963, in query
+    return self._query_cls(entities, self, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\query.py", line 277, in __init__
+    self._set_entities(entities)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\query.py", line 290, in _set_entities
+    coercions.expect(
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\sql\coercions.py", line 389, in expect
+    insp._post_inspect
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 1234, in __get__
+    obj.__dict__[self.__name__] = result = self.fget(obj)
+                                           ^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\mapper.py", line 2734, in _post_inspect
+    self._check_configure()
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\mapper.py", line 2411, in _check_configure
+    _configure_registries({self.registry}, cascade=True)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\mapper.py", line 4228, in _configure_registries
+    _do_configure_registries(registries, cascade)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\mapper.py", line 4265, in _do_configure_registries
+    raise e
+sqlalchemy.exc.InvalidRequestError: One or more mappers failed to initialize - can't proceed with initialization of other mappers. Triggering mapper: 'Mapper[User(users)]'. Original exception was: Could not determine join condition between parent/child tables on relationship User.recommendations - there are no foreign keys linking these tables.  Ensure that referencing columns are associated with a ForeignKey or ForeignKeyConstraint, or specify a 'primaryjoin' expression.
+2026-08-10 20:57:12,806 | ERROR | middleware.request_logging | request_logging.py:37 | POST /login → ERROR | 9.98 ms
+Traceback (most recent call last):
+  File "D:\developer\smartreco-agentic-recommendation-system-2026\src\middleware\request_logging.py", line 20, in dispatch
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\fastapi\routing.py", line 115, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\fastapi\routing.py", line 101, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\fastapi\routing.py", line 355, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\fastapi\routing.py", line 243, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\developer\smartreco-agentic-recommendation-system-2026\src\routes\frontend.py", line 72, in login_submit
+    user = auth_service.authenticate_user(email, password)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\developer\smartreco-agentic-recommendation-system-2026\src\services\auth_service.py", line 74, in authenticate_user
+    user = self.user_repo.get_by_email(email)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\developer\smartreco-agentic-recommendation-system-2026\src\repositories\user_repository.py", line 20, in get_by_email
+    return self.db.query(User).filter(User.email == email).first()
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\session.py", line 2963, in query
+    return self._query_cls(entities, self, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\query.py", line 277, in __init__
+    self._set_entities(entities)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\query.py", line 290, in _set_entities
+    coercions.expect(
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\sql\coercions.py", line 389, in expect
+    insp._post_inspect
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 1234, in __get__
+    obj.__dict__[self.__name__] = result = self.fget(obj)
+                                           ^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\mapper.py", line 2734, in _post_inspect
+    self._check_configure()
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\mapper.py", line 2411, in _check_configure
+    _configure_registries({self.registry}, cascade=True)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\mapper.py", line 4228, in _configure_registries
+    _do_configure_registries(registries, cascade)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\mapper.py", line 4265, in _do_configure_registries
+    raise e
+sqlalchemy.exc.InvalidRequestError: One or more mappers failed to initialize - can't proceed with initialization of other mappers. Triggering mapper: 'Mapper[User(users)]'. Original exception was: Could not determine join condition between parent/child tables on relationship User.recommendations - there are no foreign keys linking these tables.  Ensure that referencing columns are associated with a ForeignKey or ForeignKeyConstraint, or specify a 'primaryjoin' expression.
+2026-08-10 20:58:11,175 | INFO | middleware.request_logging | request_logging.py:24 | POST /api/track-events → 200 | 3.13 ms
+2026-08-10 20:58:13,241 | INFO | middleware.request_logging | request_logging.py:24 | GET /signup → 200 | 3.12 ms
+2026-08-10 20:58:14,993 | INFO | middleware.request_logging | request_logging.py:24 | POST /api/track-events → 200 | 3.73 ms
+2026-08-10 20:58:15,017 | INFO | middleware.request_logging | request_logging.py:24 | GET / → 200 | 5.19 ms
+2026-08-10 20:58:20,116 | INFO | middleware.request_logging | request_logging.py:24 | POST /api/track-events → 200 | 4.57 ms
+2026-08-10 21:00:44,697 | INFO | middleware.request_logging | request_logging.py:24 | GET /login → 200 | 1.80 ms
+2026-08-10 21:00:44,731 | INFO | middleware.request_logging | request_logging.py:24 | POST /api/track-events → 200 | 15.18 ms
+2026-08-10 21:00:49,792 | INFO | middleware.request_logging | request_logging.py:24 | POST /api/track-events → 200 | 2.24 ms
+2026-08-10 21:00:59,862 | ERROR | src.database.db | db.py:23 | Error occurred while processing database request
+Traceback (most recent call last):
+  File "D:\developer\smartreco-agentic-recommendation-system-2026\src\database\db.py", line 20, in get_db
+    yield db
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\fastapi\concurrency.py", line 29, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\fastapi\routing.py", line 101, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\fastapi\routing.py", line 355, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\fastapi\routing.py", line 243, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\developer\smartreco-agentic-recommendation-system-2026\src\routes\frontend.py", line 72, in login_submit
+    user = auth_service.authenticate_user(email, password)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\developer\smartreco-agentic-recommendation-system-2026\src\services\auth_service.py", line 74, in authenticate_user
+    user = self.user_repo.get_by_email(email)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\developer\smartreco-agentic-recommendation-system-2026\src\repositories\user_repository.py", line 20, in get_by_email
+    return self.db.query(User).filter(User.email == email).first()
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\session.py", line 2963, in query
+    return self._query_cls(entities, self, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\query.py", line 277, in __init__
+    self._set_entities(entities)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\query.py", line 290, in _set_entities
+    coercions.expect(
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\sql\coercions.py", line 389, in expect
+    insp._post_inspect
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 1234, in __get__
+    obj.__dict__[self.__name__] = result = self.fget(obj)
+                                           ^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\mapper.py", line 2734, in _post_inspect
+    self._check_configure()
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\mapper.py", line 2411, in _check_configure
+    _configure_registries({self.registry}, cascade=True)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\mapper.py", line 4228, in _configure_registries
+    _do_configure_registries(registries, cascade)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\mapper.py", line 4265, in _do_configure_registries
+    raise e
+sqlalchemy.exc.InvalidRequestError: One or more mappers failed to initialize - can't proceed with initialization of other mappers. Triggering mapper: 'Mapper[User(users)]'. Original exception was: Could not determine join condition between parent/child tables on relationship User.recommendations - there are no foreign keys linking these tables.  Ensure that referencing columns are associated with a ForeignKey or ForeignKeyConstraint, or specify a 'primaryjoin' expression.
+2026-08-10 21:00:59,873 | ERROR | middleware.request_logging | request_logging.py:37 | POST /login → ERROR | 14.46 ms
+Traceback (most recent call last):
+  File "D:\developer\smartreco-agentic-recommendation-system-2026\src\middleware\request_logging.py", line 20, in dispatch
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\fastapi\routing.py", line 115, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\fastapi\routing.py", line 101, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\fastapi\routing.py", line 355, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\fastapi\routing.py", line 243, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\developer\smartreco-agentic-recommendation-system-2026\src\routes\frontend.py", line 72, in login_submit
+    user = auth_service.authenticate_user(email, password)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\developer\smartreco-agentic-recommendation-system-2026\src\services\auth_service.py", line 74, in authenticate_user
+    user = self.user_repo.get_by_email(email)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\developer\smartreco-agentic-recommendation-system-2026\src\repositories\user_repository.py", line 20, in get_by_email
+    return self.db.query(User).filter(User.email == email).first()
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\session.py", line 2963, in query
+    return self._query_cls(entities, self, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\query.py", line 277, in __init__
+    self._set_entities(entities)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\query.py", line 290, in _set_entities
+    coercions.expect(
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\sql\coercions.py", line 389, in expect
+    insp._post_inspect
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 1234, in __get__
+    obj.__dict__[self.__name__] = result = self.fget(obj)
+                                           ^^^^^^^^^^^^^^
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\mapper.py", line 2734, in _post_inspect
+    self._check_configure()
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\mapper.py", line 2411, in _check_configure
+    _configure_registries({self.registry}, cascade=True)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\mapper.py", line 4228, in _configure_registries
+    _do_configure_registries(registries, cascade)
+  File "C:\Users\win-10\miniconda3\envs\smartreco-py312\Lib\site-packages\sqlalchemy\orm\mapper.py", line 4265, in _do_configure_registries
+    raise e
+sqlalchemy.exc.InvalidRequestError: One or more mappers failed to initialize - can't proceed with initialization of other mappers. Triggering mapper: 'Mapper[User(users)]'. Original exception was: Could not determine join condition between parent/child tables on relationship User.recommendations - there are no foreign keys linking these tables.  Ensure that referencing columns are associated with a ForeignKey or ForeignKeyConstraint, or specify a 'primaryjoin' expression.
+2026-08-10 21:00:59,955 | INFO | middleware.request_logging | request_logging.py:24 | POST /api/track-events → 200 | 3.61 ms
+2026-08-10 21:01:03,809 | INFO | middleware.request_logging | request_logging.py:24 | POST /api/track-events → 200 | 2.67 ms
+2026-08-10 21:01:03,828 | INFO | middleware.request_logging | request_logging.py:24 | GET /login → 200 | 2.02 ms
+2026-08-10 21:01:08,905 | INFO | middleware.request_logging | request_logging.py:24 | POST /api/track-events → 200 | 1.99 ms
