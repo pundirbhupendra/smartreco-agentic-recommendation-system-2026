@@ -1,0 +1,1 @@
+2026-08-10 13:11:06,317 | INFO | middleware.request_logging | request_logging.py:24 | GET /health → 404 | 0.74 ms
