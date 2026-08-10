@@ -1,0 +1,47 @@
+# Web
+fastapi==0.128.0
+uvicorn[standard]==0.40.0
+python-multipart==0.0.22
+
+# Configuration / Validation
+python-dotenv==1.2.1
+pydantic[email]==2.11.10
+pydantic-settings
+
+# Database
+SQLAlchemy==2.0.51
+
+# AI / LLM
+openai==2.16.0
+
+# Agent / LangGraph
+langgraph
+langchain
+langchain-core
+langchain-community
+langchain-openai
+langchain-chroma
+
+# Vector Database / RAG
+chromadb
+sentence-transformers
+numpy<2
+
+tiktoken
+
+# HTTP / API clients
+requests
+httpx
+
+# Scheduling
+apscheduler
+
+# Authentication
+passlib==1.7.4
+bcrypt==5.0.0
+
+# Development / Testing
+faker==40.36.0
+
+# Local package
+-e .
