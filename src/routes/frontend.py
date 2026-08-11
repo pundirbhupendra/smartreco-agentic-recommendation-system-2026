@@ -116,10 +116,10 @@ async def logout():
 
 @router.get("/dashboard", name="dashboard")
 async def dashboard(request: Request):
-    stats = {"viewed_products": 0, "searches": 0, "recommendations": 0, "interests": 0}
+    stats = {"viewed_products": 0, "searches": 0, "recommendations": 0, "interests": 0}`r`n    insights = {"ai_ml": 0, "development": 0, "data_science": 0, "cloud": 0}`r`n    recent_activity = []
     return templates.TemplateResponse(
         "dashboard.html",
-        _template_context(request, stats=stats, latest_recommendation=None),
+        _template_context(`r`n            request,`r`n            stats=stats,`r`n            latest_recommendation=None,`r`n            insights=insights,`r`n            recent_activity=recent_activity,`r`n        ),
     )
 
 

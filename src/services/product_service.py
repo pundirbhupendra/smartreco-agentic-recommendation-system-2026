@@ -5,6 +5,7 @@ import os
 
 from src.repositories.product_repository import ProductRepository
 from src.database.models.product import Product
+#from src.infrastructure.vector_store.pinecone_client import PineconeClient
 
 
 class ProductService:
@@ -95,25 +96,25 @@ class ProductService:
         """Internal method to sync a product with Vector DB (Pinecone)."""
         # This will be implemented when we set up Pinecone integration
         # For now, this is a placeholder that will be called by product operations
-        try:
-            # Import here to avoid circular dependencies
-            from src.infrastructure.vector_store.pinecone_client import PineconeClient
+        # try:
+        #     # Import here to avoid circular dependencies
+           
             
-            client = PineconeClient()
+        #     client = PineconeClient()
             
-            if operation == "create" or operation == "update":
-                client.upsert_product(product)
-            elif operation == "delete":
-                client.delete_product(product.id)
+        #     if operation == "create" or operation == "update":
+        #         client.upsert_product(product)
+        #     elif operation == "delete":
+        #         client.delete_product(product.id)
             
-            return True
-        except ImportError:
-            # Vector DB not configured, skip silently
-            return False
-        except Exception as e:
-            # Log but don't fail - products are still in SQL DB
-            print(f"Warning: Failed to sync to Vector DB: {e}")
-            return False
+        #     return True
+        # except ImportError:
+        #     # Vector DB not configured, skip silently
+        #     return False
+        # except Exception as e:
+        #     # Log but don't fail - products are still in SQL DB
+        #     print(f"Warning: Failed to sync to Vector DB: {e}")
+        return False
 
     def get_product_embedding_context(self, product: Product) -> str:
         """Generate text context for embedding a product."""

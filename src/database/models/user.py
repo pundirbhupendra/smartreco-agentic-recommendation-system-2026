@@ -1,10 +1,10 @@
 
 from datetime import datetime
-from typing import TYPE_CHECKING, List
+from typing import List
 
-if TYPE_CHECKING:
-    from src.database.models.recommendation import Recommendation
-    from src.database.models.user_activity import UserActivity
+from src.database.models.recommendation import Recommendation
+from src.database.models.user_activity import UserActivity
+from src.database.models.user_event import UserEvent
 from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.orm import relationship,Mapped,mapped_column
 from src.database.db import Base
@@ -24,6 +24,7 @@ class User(Base):
     # Example of a relationship to another table (if needed)
     recommendations: Mapped[List["Recommendation"]] = relationship("Recommendation", back_populates="user")
     activities: Mapped[List["UserActivity"]] = relationship("UserActivity", back_populates="user")
+    events: Mapped[List["UserEvent"]] = relationship("UserEvent", back_populates="user")
 
     def __repr__(self):
         return f"<User(id={self.id}, username='{self.username}', email='{self.email}')>"

@@ -2,15 +2,12 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 import os
+import bcrypt
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
 from src.repositories.user_repository import UserRepository
 from src.database.models.user import User
-
-# Password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # JWT Configuration
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-secret-key-change-in-production")
@@ -27,11 +24,20 @@ class AuthService:
 
     def hash_password(self, password: str) -> str:
         """Hash a password using bcrypt."""
-        return pwd_context.hash(password)
+        password_bytes = password.encode("utf-8")
+        if len(password_bytes) > 72:
+            raise ValueError("Password must be 72 bytes or fewer")
+        return bcrypt.hashpw(password_bytes, bcrypt.gensalt()).decode("utf-8")
 
     def verify_password(self, plain_password: str, hashed_password: str) -> bool:
         """Verify a password against its hash."""
-        return pwd_context.verify(plain_password, hashed_password)
+        password_bytes = plain_password.encode("utf-8")
+        if len(password_bytes) > 72:
+            return False
+        try:
+            return bcrypt.checkpw(password_bytes, hashed_password.encode("utf-8"))
+        except ValueError:
+            return False
 
     def create_access_token(self, user_id: int, expires_delta: Optional[timedelta] = None) -> str:
         """Create a JWT access token."""
@@ -61,7 +67,10 @@ class AuthService:
             return None
 
         # Create new user
-        hashed_password = self.hash_password(password)
+        try:
+            hashed_password = self.hash_password(password)
+        except ValueError:
+            return None
         user_data = {
             "username": username,
             "email": email,

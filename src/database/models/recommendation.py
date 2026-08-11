@@ -2,7 +2,7 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Integer, DateTime, Float
+from sqlalchemy import Integer, DateTime, Float, ForeignKey
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 if TYPE_CHECKING:
@@ -15,7 +15,7 @@ class Recommendation(Base):
     __tablename__ = "recommendations"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    user_id: Mapped[int] = mapped_column(Integer, index=True)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), index=True)
     product_id: Mapped[int] = mapped_column(Integer, index=True)
     score: Mapped[float] = mapped_column(Float)
     created_at: Mapped[DateTime] = mapped_column(DateTime, default=datetime.utcnow)
