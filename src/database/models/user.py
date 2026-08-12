@@ -1,13 +1,20 @@
 
 from datetime import datetime
-from typing import List
+from typing import TYPE_CHECKING, List
 
-from src.database.models.recommendation import Recommendation
-from src.database.models.user_activity import UserActivity
-from src.database.models.user_event import UserEvent
 from sqlalchemy import Column, Integer, String, DateTime
-from sqlalchemy.orm import relationship,Mapped,mapped_column
+from sqlalchemy.orm import relationship, Mapped, mapped_column
 from src.database.db import Base
+
+if TYPE_CHECKING:
+    from src.database.models.recommendation import Recommendation
+    from src.database.models.user_activity import UserActivity
+    from src.database.models.user_event import UserEvent
+
+# Import related models at runtime to ensure SQLAlchemy relationship targets are registered.
+import src.database.models.recommendation  # noqa: F401
+import src.database.models.user_activity  # noqa: F401
+import src.database.models.user_event  # noqa: F401
 
 
 

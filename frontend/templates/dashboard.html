@@ -191,37 +191,37 @@
                     <div class="mb-2">
                         <div class="d-flex justify-content-between">
                             <span>AI/ML Content</span>
-                            <span class="badge bg-primary">{{ insights.ai_ml || 0 }}%</span>
+                            <span class="badge bg-primary">{{ insights.ai_ml|default(0) }}%</span>
                         </div>
                         <div class="progress" style="height: 5px;">
-                            <div class="progress-bar" role="progressbar" style="width: {{ insights.ai_ml || 0 }}%"></div>
+                            <div class="progress-bar" role="progressbar" style="width: {{ insights.ai_ml|default(0) }}%"></div>
                         </div>
                     </div>
                     <div class="mb-2">
                         <div class="d-flex justify-content-between">
                             <span>Development</span>
-                            <span class="badge bg-success">{{ insights.development || 0 }}%</span>
+                            <span class="badge bg-success">{{ insights.development|default(0) }}%</span>
                         </div>
                         <div class="progress" style="height: 5px;">
-                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ insights.development || 0 }}%"></div>
+                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ insights.development|default(0) }}%"></div>
                         </div>
                     </div>
                     <div class="mb-2">
                         <div class="d-flex justify-content-between">
                             <span>Data Science</span>
-                            <span class="badge bg-info">{{ insights.data_science || 0 }}%</span>
+                            <span class="badge bg-info">{{ insights.data_science|default(0) }}%</span>
                         </div>
                         <div class="progress" style="height: 5px;">
-                            <div class="progress-bar bg-info" role="progressbar" style="width: {{ insights.data_science || 0 }}%"></div>
+                            <div class="progress-bar bg-info" role="progressbar" style="width: {{ insights.data_science|default(0) }}%"></div>
                         </div>
                     </div>
                     <div>
                         <div class="d-flex justify-content-between">
                             <span>Cloud Computing</span>
-                            <span class="badge bg-warning">{{ insights.cloud || 0 }}%</span>
+                            <span class="badge bg-warning">{{ insights.cloud|default(0) }}%</span>
                         </div>
                         <div class="progress" style="height: 5px;">
-                            <div class="progress-bar bg-warning" role="progressbar" style="width: {{ insights.cloud || 0 }}%"></div>
+                            <div class="progress-bar bg-warning" role="progressbar" style="width: {{ insights.cloud|default(0) }}%"></div>
                         </div>
                     </div>
                 </div>

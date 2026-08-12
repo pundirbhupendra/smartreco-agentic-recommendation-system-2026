@@ -1,4 +1,5 @@
 """Frontend page routes for the SmartReco web UI."""
+from datetime import datetime, timedelta
 from types import SimpleNamespace
 from typing import Any, Optional
 
@@ -12,8 +13,38 @@ from src.services.auth_service import AuthService
 from src.services.product_service import ProductService
 from src.services.recommendation_service import RecommendationService
 
+
+def timesince(value: datetime | None) -> str:
+    if value is None:
+        return ""
+
+    now = datetime.utcnow()
+    if value.tzinfo is not None:
+        now = datetime.now(value.tzinfo)
+
+    delta = now - value
+    seconds = int(delta.total_seconds())
+    if seconds < 60:
+        return "just now"
+    if seconds < 3600:
+        minutes = seconds // 60
+        return f"{minutes} minute{'s' if minutes != 1 else ''} ago"
+    if seconds < 86400:
+        hours = seconds // 3600
+        return f"{hours} hour{'s' if hours != 1 else ''} ago"
+    days = seconds // 86400
+    if days < 30:
+        return f"{days} day{'s' if days != 1 else ''} ago"
+    months = days // 30
+    if months < 12:
+        return f"{months} month{'s' if months != 1 else ''} ago"
+    years = days // 365
+    return f"{years} year{'s' if years != 1 else ''} ago"
+
+
 router = APIRouter(include_in_schema=False)
 templates = Jinja2Templates(directory="frontend/templates")
+templates.env.filters["timesince"] = timesince
 
 
 def _session(request: Request) -> dict[str, Any]:
@@ -116,10 +147,18 @@ async def logout():
 
 @router.get("/dashboard", name="dashboard")
 async def dashboard(request: Request):
-    stats = {"viewed_products": 0, "searches": 0, "recommendations": 0, "interests": 0}`r`n    insights = {"ai_ml": 0, "development": 0, "data_science": 0, "cloud": 0}`r`n    recent_activity = []
+    stats = {"viewed_products": 0, "searches": 0, "recommendations": 0, "interests": 0}
+    insights = {"ai_ml": 0, "development": 0, "data_science": 0, "cloud": 0}
+    recent_activity = []
     return templates.TemplateResponse(
         "dashboard.html",
-        _template_context(`r`n            request,`r`n            stats=stats,`r`n            latest_recommendation=None,`r`n            insights=insights,`r`n            recent_activity=recent_activity,`r`n        ),
+        _template_context(
+            request,
+            stats=stats,
+            latest_recommendation=None,
+            insights=insights,
+            recent_activity=recent_activity,
+        ),
     )
 
 
