@@ -1,5 +1,6 @@
 """Product API routes (CRUD, browse, search)."""
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from datetime import datetime
 from pydantic import BaseModel
 from typing import List, Optional
 from sqlalchemy.orm import Session
@@ -49,8 +50,8 @@ class ProductResponse(BaseModel):
     description: str
     category: Optional[str]
     price: float
-    created_at: str
-    updated_at: str
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True
@@ -203,7 +204,7 @@ async def create_product(
     try:
         product_service = ProductService(db)
         
-        product_data = product.dict()
+        product_data = product.model_dump()
         created_product = product_service.create_product(product_data)
         
         logger.info(f"Product created: {created_product.name} (ID: {created_product.id})")
@@ -237,7 +238,7 @@ async def update_product(
             )
         
         # Update product
-        update_data = product.dict(exclude_unset=True)
+        update_data = product.model_dump(exclude_unset=True)
         updated_product = product_service.update_product(product_id, update_data)
         
         logger.info(f"Product updated: {product_id}")

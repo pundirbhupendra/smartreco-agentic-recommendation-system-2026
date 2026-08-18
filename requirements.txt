@@ -44,6 +44,7 @@ python-jose[cryptography]==3.5.0
 
 # Development / Testing
 faker==40.36.0
+pytest
 
 # Local package
 -e .

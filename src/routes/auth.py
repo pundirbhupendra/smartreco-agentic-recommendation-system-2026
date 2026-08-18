@@ -1,5 +1,6 @@
 """Authentication API routes (login, register)."""
 from fastapi import APIRouter, Depends, HTTPException, status
+from datetime import datetime
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 
@@ -55,7 +56,7 @@ class UserResponse(BaseModel):
     id: int
     username: str
     email: str
-    created_at: str
+    created_at: datetime
 
     class Config:
         from_attributes = True
