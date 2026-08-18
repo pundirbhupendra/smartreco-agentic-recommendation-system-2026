@@ -23,6 +23,7 @@ langchain-openai
 langchain-chroma
 
 # Vector Database / RAG
+qdrant-client
 chromadb
 sentence-transformers
 numpy<2
