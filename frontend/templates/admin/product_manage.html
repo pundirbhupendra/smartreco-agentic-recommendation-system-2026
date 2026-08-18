@@ -39,7 +39,7 @@
                             <td><span class="badge bg-primary">{{ product.category }}</span></td>
                             <td>${{ product.price }}</td>
                             <td>
-                                <span class="badge bg-success">Synced</span>
+                                <span class="badge bg-secondary">SQL catalog</span>
                             </td>
                             <td>
                                 <button class="btn btn-sm btn-outline-primary" 
@@ -69,12 +69,12 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form id="productForm" method="POST" action="{{ url_for('manage_products') }}">
+                <form id="productForm">
                     <input type="hidden" id="productId" name="product_id">
                     
                     <div class="mb-3">
-                        <label for="title" class="form-label">Title</label>
-                        <input type="text" class="form-control" id="title" name="title" required>
+                        <label for="name" class="form-label">Course name</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
                     </div>
                     
                     <div class="mb-3">
@@ -85,15 +85,7 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label for="category" class="form-label">Category</label>
-                            <select class="form-select" id="category" name="category" required>
-                                <option value="">Select category</option>
-                                <option value="ai-machine-learning">AI & Machine Learning</option>
-                                <option value="data-science">Data Science</option>
-                                <option value="development">Development</option>
-                                <option value="cloud-computing">Cloud Computing</option>
-                                <option value="cybersecurity">Cybersecurity</option>
-                                <option value="devops">DevOps</option>
-                            </select>
+                            <input type="text" class="form-control" id="category" name="category" required>
                         </div>
                         <div class="col-md-6">
                             <label for="price" class="form-label">Price ($)</label>
@@ -102,12 +94,7 @@
                     </div>
                     
                     <div class="mb-3 mt-3">
-                        <label for="vector_status" class="form-label">Vector Database Sync</label>
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input" id="vector_sync" checked disabled>
-                            <label class="form-check-label" for="vector_sync">Auto-sync to vector database</label>
-                        </div>
-                        <small class="text-muted">Products are automatically dual-written to SQL and vector DB</small>
+                        <small class="text-muted">Products are stored in the SQL catalog. Vector synchronization will be added later.</small>
                     </div>
                 </form>
             </div>
@@ -126,12 +113,12 @@ let productModal = new bootstrap.Modal(document.getElementById('productModal'));
 
 function editProduct(id) {
     // Fetch product data and populate form
-    fetch(`/api/admin/product/${id}`)
+    fetch(`/admin/products/${id}/data`)
         .then(response => response.json())
         .then(data => {
             document.getElementById('productModalTitle').textContent = 'Edit Product';
             document.getElementById('productId').value = data.id;
-            document.getElementById('title').value = data.title;
+            document.getElementById('name').value = data.name;
             document.getElementById('description').value = data.description;
             document.getElementById('category').value = data.category;
             document.getElementById('price').value = data.price;
@@ -143,9 +130,9 @@ function editProduct(id) {
 }
 
 function deleteProduct(id) {
-    if (!confirm('Delete this product? This will also remove it from the vector database.')) return;
+    if (!confirm('Delete this product from the SQL catalog?')) return;
     
-    fetch(`/api/admin/product/${id}`, {
+    fetch(`/admin/products/${id}`, {
         method: 'DELETE'
     })
     .then(response => response.json())
@@ -164,9 +151,12 @@ function deleteProduct(id) {
 function submitProduct() {
     const form = document.getElementById('productForm');
     const formData = new FormData(form);
+    const productId = document.getElementById('productId').value;
+    const endpoint = productId ? `/admin/products/${productId}` : '/admin/products';
+    const method = productId ? 'PUT' : 'POST';
     
-    fetch(form.action, {
-        method: 'POST',
+    fetch(endpoint, {
+        method: method,
         body: formData
     })
     .then(response => response.json())

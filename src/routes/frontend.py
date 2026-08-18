@@ -4,19 +4,26 @@ from types import SimpleNamespace
 from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Query, Request, status
-from fastapi.responses import RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from src.database.db import get_db
+from src.database.models.user import User
 from src.services.auth_service import AuthService
 from src.services.product_service import ProductService
 from src.services.recommendation_service import RecommendationService
 
 
-def timesince(value: datetime | None) -> str:
+def timesince(value: datetime | str | None) -> str:
     if value is None:
         return ""
+
+    if isinstance(value, str):
+        try:
+            value = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError:
+            return value
 
     now = datetime.utcnow()
     if value.tzinfo is not None:
@@ -67,6 +74,18 @@ def _template_context(request: Request, **extra: Any) -> dict[str, Any]:
     }
     context.update(extra)
     return context
+
+
+def _require_admin(request: Request, db: Session) -> User:
+    """Return the signed-in admin user represented by the session cookie."""
+    token = request.cookies.get("access_token")
+    if not token:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Login required")
+
+    user = AuthService(db).get_current_user(token)
+    if user is None or user.id != 1:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+    return user
 
 
 def _view_product(product: Any) -> Any:
@@ -239,6 +258,78 @@ async def admin_dashboard(request: Request):
 async def manage_products(request: Request, db: Session = Depends(get_db)):
     products = [_view_product(product) for product in ProductService(db).get_all_products(0, 1000)]
     return templates.TemplateResponse("admin/product_manage.html", _template_context(request, products=products))
+
+
+@router.get("/admin/products/{product_id}/data")
+async def admin_product_data(product_id: int, request: Request, db: Session = Depends(get_db)):
+    _require_admin(request, db)
+    product = ProductService(db).get_product(product_id)
+    if product is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
+    return _product_json(product)
+
+
+@router.post("/admin/products")
+async def admin_create_product(request: Request, db: Session = Depends(get_db)):
+    _require_admin(request, db)
+    form = await request.form()
+    name = str(form.get("name", "")).strip()
+    description = str(form.get("description", "")).strip()
+    category = str(form.get("category", "")).strip()
+    price_value = str(form.get("price", "")).strip()
+
+    if not name or not description or not category:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Name, description, and category are required")
+    try:
+        price = float(price_value)
+    except ValueError as error:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Price must be a number") from error
+
+    product_service = ProductService(db)
+    if product_service.product_repo.get_by_name(name):
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="A product with this name already exists")
+
+    product = product_service.create_product(
+        {"name": name, "description": description, "category": category, "price": price}
+    )
+    return JSONResponse({"success": True, "product": _product_json(product)}, status_code=status.HTTP_201_CREATED)
+
+
+@router.put("/admin/products/{product_id}")
+async def admin_update_product(product_id: int, request: Request, db: Session = Depends(get_db)):
+    _require_admin(request, db)
+    product_service = ProductService(db)
+    if product_service.get_product(product_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
+
+    form = await request.form()
+    name = str(form.get("name", "")).strip()
+    description = str(form.get("description", "")).strip()
+    category = str(form.get("category", "")).strip()
+    price_value = str(form.get("price", "")).strip()
+    if not name or not description or not category:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Name, description, and category are required")
+    try:
+        price = float(price_value)
+    except ValueError as error:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Price must be a number") from error
+
+    product = product_service.update_product(
+        product_id,
+        {"name": name, "description": description, "category": category, "price": price},
+    )
+    return {"success": True, "product": _product_json(product)}
+
+
+@router.delete("/admin/products/{product_id}")
+async def admin_delete_product(product_id: int, request: Request, db: Session = Depends(get_db)):
+    _require_admin(request, db)
+    product_service = ProductService(db)
+    if product_service.get_product(product_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
+
+    product_service.delete_product(product_id)
+    return {"success": True}
 
 def _product_json(product: Any) -> dict[str, Any]:
     view = _view_product(product)

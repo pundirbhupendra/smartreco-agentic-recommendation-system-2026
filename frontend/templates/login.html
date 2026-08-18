@@ -59,11 +59,13 @@
             
             <!-- Demo Credentials -->
             <div class="card mt-3 bg-light border-0">
-                <div class="card-body text-center">
-                    <small class="text-muted">Demo Credentials:</small>
-                    <div class="d-flex justify-content-center gap-3 mt-1">
-                        <span class="badge bg-secondary">user@demo.com / demo123</span>
-                        <span class="badge bg-primary">admin@demo.com / admin123</span>
+                <div class="card-body">
+                    <small class="text-muted d-block text-center mb-2">Demo learner accounts (password: demo1234)</small>
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-primary demo-login" data-email="maya@demo.dev">Maya - Agentic AI</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary demo-login" data-email="raj@demo.dev">Raj - Machine Learning</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary demo-login" data-email="sofia@demo.dev">Sofia - Python and Web Development</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary demo-login" data-email="kai@demo.dev">Kai - LLM, Career, and Cloud</button>
                     </div>
                 </div>
             </div>
@@ -77,5 +79,13 @@ function togglePassword(inputId) {
     const type = input.type === 'password' ? 'text' : 'password';
     input.type = type;
 }
+
+document.querySelectorAll('.demo-login').forEach((button) => {
+    button.addEventListener('click', () => {
+        document.getElementById('email').value = button.dataset.email;
+        document.getElementById('password').value = 'demo1234';
+        document.getElementById('password').focus();
+    });
+});
 </script>
 {% endblock %}

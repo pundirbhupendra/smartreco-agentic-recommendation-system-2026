@@ -7,8 +7,16 @@ load_dotenv()
 class Settings:
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
     MESH_API_KEY: str = os.getenv("MESH_API_KEY", "")
-    PINECONE_API_KEY: str = os.getenv("PINECONE_API_KEY", "")
-    PINECONE_INDEX_NAME: str = os.getenv("PINECONE_INDEX_NAME", "smartreco-products")
+    MESH_BASE_URL: str = os.getenv("MESH_BASE_URL", "https://api.meshapi.ai/v1")
+   # PINECONE_API_KEY: str = os.getenv("PINECONE_API_KEY", "")
+   # PINECONE_INDEX_NAME: str = os.getenv("PINECONE_INDEX_NAME", "smartreco-products")
+    QDRANT_URL: str = os.getenv("QDRANT_URL", "")
+    QDRANT_API_KEY: str = os.getenv("QDRANT_API_KEY", "")
+    QDRANT_PATH: str = os.getenv("QDRANT_PATH", "./.smartreco/qdrant")
+    QDRANT_COLLECTION: str = os.getenv("QDRANT_COLLECTION", "my_reco_db")
+    MESH_EMBEDDING_MODEL: str = os.getenv(
+        "MESH_EMBEDDING_MODEL", "openai/text-embedding-3-small"
+    )
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./Data/smartreco.db")
     
     # LangSmith Settings

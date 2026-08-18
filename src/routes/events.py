@@ -1,14 +1,13 @@
 """Event tracking API routes."""
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel
-from typing import List, Optional
 from datetime import datetime
 from sqlalchemy.orm import Session
 
 from src.database.db import get_db
 from src.database.models.user import User
+from src.deps import CurrentUser, DatabaseSession
+from src.schemas import ActivitySummaryOut, EventBatch, EventIn, EventOut
 from src.services.event_service import EventService
-from src.services.auth_service import AuthService
 from src.logging_config.config import get_logger
 
 logger = get_logger(__name__)
@@ -16,98 +15,11 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/events", tags=["events"])
 
 
-# Pydantic models
-class EventData(BaseModel):
-    """Single event data."""
-    user_id: int
-    product_id: int
-    score: float = 0.0
-    created_at: Optional[datetime] = None
-
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "user_id": 1,
-                "product_id": 5,
-                "score": 0.85,
-                "created_at": "2026-08-10T14:30:00Z"
-            }
-        }
-
-
-class BatchEventsRequest(BaseModel):
-    """Batch events request (non-blocking ingestion)."""
-    events: List[EventData]
-
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "events": [
-                    {
-                        "user_id": 1,
-                        "product_id": 5,
-                        "score": 0.85
-                    },
-                    {
-                        "user_id": 1,
-                        "product_id": 12,
-                        "score": 0.92
-                    }
-                ]
-            }
-        }
-
-
-class EventResponse(BaseModel):
-    """Event response."""
-    id: int
-    user_id: int
-    product_id: int
-    score: float
-    created_at: str
-
-    class Config:
-        from_attributes = True
-
-
-class ActivitySummaryResponse(BaseModel):
-    """User activity summary response."""
-    user_id: int
-    total_events: int
-    unique_products: int
-    avg_score: float
-
-
-# Dependency: verify authenticated user
-async def get_auth_user(
-    auth_token: Optional[str] = None,
-    db: Session = Depends(get_db)
-) -> User:
-    """Get authenticated user from token."""
-    if not auth_token:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token required"
-        )
-    
-    auth_service = AuthService(db)
-    user = auth_service.get_current_user(auth_token)
-    
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token"
-        )
-    
-    return user
-
-
-@router.post("/track", response_model=EventResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/track", response_model=EventOut, status_code=status.HTTP_201_CREATED)
 async def track_event(
-    event: EventData,
-    auth_token: Optional[str] = None,
-    db: Session = Depends(get_db),
-    user: User = Depends(get_auth_user)
+    event: EventIn,
+    db: DatabaseSession,
+    user: CurrentUser,
 ):
     """Track a single user event (real-time)."""
     try:
@@ -138,10 +50,9 @@ async def track_event(
 
 @router.post("/batch", status_code=status.HTTP_202_ACCEPTED)
 async def batch_track_events(
-    request: BatchEventsRequest,
-    auth_token: Optional[str] = None,
-    db: Session = Depends(get_db),
-    user: User = Depends(get_auth_user)
+    request: EventBatch,
+    db: DatabaseSession,
+    user: CurrentUser,
 ):
     """Batch track multiple events (non-blocking, efficient)."""
     try:
@@ -183,19 +94,18 @@ async def batch_track_events(
         )
 
 
-@router.get("/summary", response_model=ActivitySummaryResponse)
+@router.get("/summary", response_model=ActivitySummaryOut)
 async def get_activity_summary(
+    db: DatabaseSession,
+    user: CurrentUser,
     hours: int = 24,
-    auth_token: Optional[str] = None,
-    db: Session = Depends(get_db),
-    user: User = Depends(get_auth_user)
 ):
     """Get user's activity summary (insights)."""
     try:
         event_service = EventService(db)
         activity = event_service.get_user_activity_summary(user.id, hours)
         
-        return ActivitySummaryResponse(
+        return ActivitySummaryOut(
             user_id=user.id,
             total_events=activity["total_events"],
             unique_products=activity["unique_products"],
@@ -211,10 +121,9 @@ async def get_activity_summary(
 
 @router.get("/interests", response_model=dict)
 async def get_user_interests(
+    db: DatabaseSession,
+    user: CurrentUser,
     hours: int = 72,
-    auth_token: Optional[str] = None,
-    db: Session = Depends(get_db),
-    user: User = Depends(get_auth_user)
 ):
     """Get user's interests based on recent activity."""
     try:
@@ -236,10 +145,9 @@ async def get_user_interests(
 
 @router.get("/context", response_model=dict)
 async def get_activity_context(
+    db: DatabaseSession,
+    user: CurrentUser,
     hours: int = 48,
-    auth_token: Optional[str] = None,
-    db: Session = Depends(get_db),
-    user: User = Depends(get_auth_user)
 ):
     """Get activity context (text description for LLM)."""
     try:

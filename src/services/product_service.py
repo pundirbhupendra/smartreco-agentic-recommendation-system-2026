@@ -5,7 +5,7 @@ import os
 
 from src.repositories.product_repository import ProductRepository
 from src.database.models.product import Product
-#from src.infrastructure.vector_store.pinecone_client import PineconeClient
+from src.infrastructure.vector_store.qdrant_store import QdrantProductStore
 
 
 class ProductService:
@@ -14,8 +14,8 @@ class ProductService:
     def __init__(self, db: Session):
         self.db = db
         self.product_repo = ProductRepository(db)
-        # Vector DB integration will be injected or loaded on demand
         self.vector_db_enabled = os.getenv("ENABLE_VECTOR_DB", "true").lower() == "true"
+        self._vector_store = None
 
     def create_product(self, product_data: Dict[str, Any]) -> Product:
         """Create a new product (dual-write to SQL + Vector DB)."""
@@ -80,43 +80,26 @@ class ProductService:
             return 0
         
         products = self.product_repo.get_all(skip=0, limit=10000)
-        count = 0
-        
-        for product in products:
-            try:
-                self._sync_to_vector_db(product, operation="create")
-                count += 1
-            except Exception as e:
-                # Log error but continue with other products
-                print(f"Error syncing product {product.id} to Vector DB: {e}")
-        
-        return count
+        return self._get_vector_store().upsert_products(products)
+
+    def _get_vector_store(self) -> QdrantProductStore:
+        if self._vector_store is None:
+            self._vector_store = QdrantProductStore()
+        return self._vector_store
 
     def _sync_to_vector_db(self, product: Product, operation: str = "create") -> bool:
-        """Internal method to sync a product with Vector DB (Pinecone)."""
-        # This will be implemented when we set up Pinecone integration
-        # For now, this is a placeholder that will be called by product operations
-        # try:
-        #     # Import here to avoid circular dependencies
-           
-            
-        #     client = PineconeClient()
-            
-        #     if operation == "create" or operation == "update":
-        #         client.upsert_product(product)
-        #     elif operation == "delete":
-        #         client.delete_product(product.id)
-            
-        #     return True
-        # except ImportError:
-        #     # Vector DB not configured, skip silently
-        #     return False
-        # except Exception as e:
-        #     # Log but don't fail - products are still in SQL DB
-        #     print(f"Warning: Failed to sync to Vector DB: {e}")
-        return False
+        """Synchronize one product with the configured remote Qdrant store."""
+        store = self._get_vector_store()
+        if operation in {"create", "update"}:
+            store.upsert_product(product)
+        elif operation == "delete":
+            store.delete_product(product.id)
+        else:
+            raise ValueError(f"Unsupported vector operation: {operation}")
+        return True
 
-    def get_product_embedding_context(self, product: Product) -> str:
+    @staticmethod
+    def get_product_embedding_context(product: Product) -> str:
         """Generate text context for embedding a product."""
         context = f"""
 Product: {product.name}

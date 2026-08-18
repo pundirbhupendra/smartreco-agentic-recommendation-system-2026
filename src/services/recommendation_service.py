@@ -1,6 +1,8 @@
 """Recommendation service - core recommendation logic."""
-from typing import Optional, List, Dict, Any
-from datetime import datetime, timedelta
+from typing import Optional, List, Dict, Any, cast
+from datetime import datetime, timedelta, timezone
+from collections import defaultdict
+import os
 from sqlalchemy.orm import Session
 
 from src.repositories.recommendation_repository import RecommendationRepository
@@ -14,6 +16,11 @@ from src.logging_config.config import get_logger
 logger = get_logger(__name__)
 
 
+def _utcnow() -> datetime:
+    """Return a naive UTC datetime for the existing database columns."""
+    return datetime.now(timezone.utc).replace(tzinfo=None)
+
+
 class RecommendationService:
     """Service for generating and managing recommendations."""
 
@@ -23,7 +30,13 @@ class RecommendationService:
         self.user_repo = UserRepository(db)
         self.product_repo = ProductRepository(db)
         self.event_service = EventService(db)
-        self.llm_service = LLMService()
+        self.llm_service = None
+        if os.getenv("ENABLE_LLM_RECOMMENDATIONS", "false").lower() == "true":
+            try:
+                self.llm_service = LLMService()
+            except ValueError:
+                # Deterministic recommendations remain available without Mesh.
+                self.llm_service = None
         
         # Caching configuration
         self.cache_ttl_hours = 6  # Refresh cache every 6 hours
@@ -44,11 +57,12 @@ class RecommendationService:
         latest_rec = self.rec_repo.get_latest_recommendation(user_id)
         if latest_rec:
             # Check if cache is still fresh
-            age = datetime.utcnow() - latest_rec.created_at
+            created_at = cast(datetime, latest_rec.created_at)
+            age = _utcnow() - created_at
             if age < timedelta(hours=self.cache_ttl_hours):
                 # Check if significant user activity
                 should_refresh = self.event_service.should_refresh_recommendations(
-                    user_id, latest_rec.created_at
+                    user_id, created_at
                 )
                 if not should_refresh:
                     return self._format_recommendation(latest_rec)
@@ -79,86 +93,51 @@ Browse these courses and tell us what interests you by viewing them!
                 }
                 for p in top_products
             ],
-            "generated_at": datetime.utcnow().isoformat(),
+            "generated_at": _utcnow().isoformat(),
             "refresh_reason": "cold_start_user",
             "is_cached": False
         }
 
     def _generate_new_recommendation(self, user_id: int) -> Optional[Dict[str, Any]]:
-        """Generate a fresh recommendation based on user activity."""
+        """Generate explainable recommendations from recent product activity."""
         try:
-            # Step 1: Get user activity context
-            activity_summary = self.event_service.get_user_activity_summary(user_id, hours=48)
-            activity_context = self.event_service.get_event_context(user_id, hours=48)
-            
-            if activity_summary["total_events"] == 0:
+            events = self.event_service.event_repo.get_recent_user_events(user_id, hours=72)
+            if not events:
                 return self._get_cold_start_recommendation(user_id)
-            
-            # Step 2: Extract user interests
-            interests = self.llm_service.extract_user_interests(activity_context)
-            logger.info(f"Extracted interests for user {user_id}: {interests}")
-            
-            # Step 3: Build semantic search query
-            search_query = self.llm_service.build_search_query(activity_context, interests)
-            logger.info(f"Generated search query for user {user_id}: {search_query}")
-            
-            # Step 4: Retrieve relevant products (simulated - will use Vector DB in production)
-            # For now, search in SQL database
-            retrieved_products = self.product_repo.search_products(
-                " ".join(interests), limit=10
-            )
-            
-            # Step 5: Evaluate retrieval quality
-            retrieval_results = [
-                {
-                    "name": p.name,
-                    "score": 0.8,  # Will be actual similarity score from Vector DB
-                    "id": p.id
-                }
-                for p in retrieved_products
-            ]
-            quality_eval = self.llm_service.evaluate_retrieval_quality(search_query, retrieval_results)
-            logger.info(f"Retrieval quality evaluation: {quality_eval}")
-            
-            # Step 6: If quality is poor, refine query and retry
-            if not quality_eval.get("is_good_match", True) and len(retrieved_products) > 0:
-                refined_query = self.llm_service.refine_search_query(
-                    search_query,
-                    "Initial results not relevant enough"
-                )
-                retrieved_products = self.product_repo.search_products(refined_query, limit=10)
-                logger.info(f"Refined search query: {refined_query}")
-            
-            # Step 7: Generate persuasive narrative
-            products_data = [
-                {
-                    "id": p.id,
-                    "name": p.name,
-                    "description": p.description,
-                    "price": p.price
-                }
-                for p in retrieved_products[:5]
-            ]
-            
-            narrative = self.llm_service.generate_recommendation_narrative(
-                user_id,
-                interests,
-                products_data,
-                activity_context
-            )
-            logger.info(f"Generated narrative for user {user_id}")
-            
-            # Step 8: Store recommendation
+
+            category_scores: dict[str, float] = defaultdict(float)
+            seen_product_ids = set()
+            for event in events:
+                product = self.product_repo.get_by_id(event.product_id)
+                if product is None:
+                    continue
+                seen_product_ids.add(product.id)
+                category_scores[product.category or "uncategorized"] += max(event.score, 0.1)
+
+            candidates = []
+            for product in self.product_repo.get_all(0, 1000):
+                if product.id in seen_product_ids:
+                    continue
+                category_score = category_scores.get(product.category or "uncategorized", 0.0)
+                if category_score > 0:
+                    candidates.append((product, category_score))
+
+            if not candidates:
+                candidates = [
+                    (product, 0.5)
+                    for product in self.product_repo.get_top_products(limit=10)
+                    if product.id not in seen_product_ids
+                ]
+
+            candidates.sort(key=lambda item: (-item[1], item[0].created_at), reverse=False)
+            retrieved_products = [product for product, _ in candidates[:5]]
+            max_category_score = max((score for _, score in candidates), default=1.0)
+            scores = {
+                product.id: round(min(0.99, 0.55 + (score / max_category_score) * 0.4), 2)
+                for product, score in candidates[:5]
+            }
             recommendation = self._store_recommendation(
-                user_id,
-                retrieved_products[:5],
-                narrative,
-                {
-                    "interests": interests,
-                    "search_query": search_query,
-                    "quality_score": quality_eval.get("quality_score", 0.5),
-                    "retrieval_count": len(retrieved_products)
-                }
+                user_id, retrieved_products, {"scores": scores}
             )
             
             return self._format_recommendation(recommendation)
@@ -171,7 +150,6 @@ Browse these courses and tell us what interests you by viewing them!
         self,
         user_id: int,
         products: List,
-        narrative: str,
         metadata: Dict[str, Any]
     ) -> Optional[Recommendation]:
         """Store recommendation in database."""
@@ -182,9 +160,9 @@ Browse these courses and tell us what interests you by viewing them!
                 rec_data = {
                     "user_id": user_id,
                     "product_id": product.id,
-                    "score": metadata.get("quality_score", 0.8),
-                    "created_at": datetime.utcnow(),
-                    "updated_at": datetime.utcnow()
+                    "score": metadata.get("scores", {}).get(product.id, 0.8),
+                    "created_at": _utcnow(),
+                    "updated_at": _utcnow()
                 }
                 rec = self.rec_repo.create(rec_data)
                 recommendations.append(rec)
@@ -200,6 +178,14 @@ Browse these courses and tell us what interests you by viewing them!
     def _format_recommendation(self, recommendation: Recommendation) -> Dict[str, Any]:
         """Format a recommendation object for API response."""
         product = self.product_repo.get_by_id(recommendation.product_id)
+        if product is None:
+            raise ValueError(
+                f"Product {recommendation.product_id} no longer exists for recommendation "
+                f"{recommendation.id}"
+            )
+
+        created_at = cast(datetime, recommendation.created_at)
+        updated_at = cast(datetime, recommendation.updated_at)
         
         return {
             "id": recommendation.id,
@@ -211,8 +197,8 @@ Browse these courses and tell us what interests you by viewing them!
                 "price": product.price,
             },
             "score": recommendation.score,
-            "created_at": recommendation.created_at.isoformat(),
-            "updated_at": recommendation.updated_at.isoformat()
+            "created_at": created_at.isoformat(),
+            "updated_at": updated_at.isoformat()
         }
 
     def get_user_recommendations(self, user_id: int, limit: int = 5) -> List[Dict[str, Any]]:
