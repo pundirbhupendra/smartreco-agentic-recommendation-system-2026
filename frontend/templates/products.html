@@ -28,7 +28,7 @@
                     All
                 </a>
                 {% for category in categories %}
-                <a href="{{ url_for('products', category=category) }}" 
+                     <a href="{{ url_for('products') }}?category={{ category|urlencode }}" 
                    class="btn btn-outline-primary btn-sm {% if current_category == category %}active{% endif %}">
                     {{ category|title }}
                 </a>

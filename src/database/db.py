@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.engine import make_url
 from sqlalchemy.orm import sessionmaker, declarative_base
 from src.config.settings import settings
@@ -35,6 +35,18 @@ def init_db() -> None:
     from src.database.models import recommendation, user, user_activity, user_event, product  # noqa: F401
 
     Base.metadata.create_all(bind=engine)
+    _migrate_sqlite_product_category()
+
+
+def _migrate_sqlite_product_category() -> None:
+    """Add the product category column for existing local SQLite databases."""
+    if engine.dialect.name != "sqlite":
+        return
+
+    columns = {column["name"] for column in inspect(engine).get_columns("products")}
+    if "category" not in columns:
+        with engine.begin() as connection:
+            connection.execute(text("ALTER TABLE products ADD COLUMN category VARCHAR"))
 
 
 def get_db():

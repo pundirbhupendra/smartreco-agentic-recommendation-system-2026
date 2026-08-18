@@ -51,11 +51,6 @@ class EventTracker {
             this.flush();
         }
         
-        // For debugging
-        if (process.env.NODE_ENV === 'development') {
-            console.log('Event tracked:', event);
-        }
-        
         return event;
     }
     
