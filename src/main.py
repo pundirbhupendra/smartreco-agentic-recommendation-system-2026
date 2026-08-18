@@ -39,4 +39,5 @@ app = create_app()
 
 
 # conda activate smartreco-py312
-# uvicorn src.main:app --reload
+# uvicorn src.main:app --reload 
+#& 'C:\Users\win-10\miniconda3\envs\smartreco-py312\python.exe' -m uvicorn src.main:app --reload
