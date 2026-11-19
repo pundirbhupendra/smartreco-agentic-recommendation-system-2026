@@ -6,6 +6,16 @@ Watch how users behave, understand their interests, and intelligently recommend 
 
 This is **not** a simple "related products" widget — it's a fully agentic system with behavioral tracking, semantic retrieval, and personalized narrative generation.
 
+> **Current implementation status:** The working foundation includes FastAPI, SQLite/SQLAlchemy, JWT authentication, product CRUD, browser event tracking, deterministic personalized recommendations, Mesh API access, and Qdrant Cloud semantic storage. LangGraph orchestration, scheduler jobs, email delivery, caching, and LangSmith tracing are planned next and are not yet complete.
+
+### Verified Local Data
+
+- 61 seeded courses in SQL
+- 4 demo personas with different behavioral histories
+- Qdrant collection: `my_reco_db`
+- 61 product vectors synchronized to Qdrant Cloud
+- 7 isolated pytest tests passing without network services
+
 ---
 
 ## 🎯 Project Overview
@@ -14,7 +24,7 @@ SmartReco is a complete recommendation platform built for the **SmartReco Build 
 - **Behavioral Event Tracking** - non-blocking, batched user activity capture
 - **Dual-Write Product System** - products sync between SQL and Vector DB
 - **LangGraph Agentic Engine** - structured reasoning workflow
-- **Semantic Retrieval** - RAG-based product matching via Pinecone
+- **Semantic Retrieval** - RAG-based product matching via Qdrant Cloud
 - **Mesh API Integration** - all LLM calls routed through Mesh (mandatory)
 - **Personalized Generation** - compelling narratives tailored to user interests
 - **Scheduled Delivery** - daily email digests with recommendations (bonus)
@@ -36,7 +46,7 @@ SmartReco is a complete recommendation platform built for the **SmartReco Build 
 2. DUAL-WRITE PRODUCT MANAGEMENT (Admin)
    Product Added/Updated
    └─→ Write to PostgreSQL Database
-   └─→ Simultaneously sync to Pinecone Vector DB
+  └─→ Simultaneously sync to Qdrant Cloud
        (Kept in sync with validation checks)
 
 3. EVENT INGESTION & AGGREGATION (Backend)
@@ -66,7 +76,7 @@ SmartReco is a complete recommendation platform built for the **SmartReco Build 
                   │
    ┌──────────────▼──────────────────────────┐
    │  Node 3: Semantic Retrieval             │
-   │  - Query Pinecone Vector DB             │
+  │  - Query Qdrant Vector DB               │
    │  - Fetch top-K relevant products        │
    │  - Apply metadata filters if needed     │
    └──────────────┬──────────────────────────┘
@@ -124,16 +134,15 @@ SmartReco is a complete recommendation platform built for the **SmartReco Build 
 - ✅ **User Authentication** - JWT-based login with user/admin roles
 - ✅ **Product Management** - Admin CRUD with dual-write (SQL + Vector DB)
 - ✅ **Behavioral Event Tracking** - Non-blocking, batched event ingestion
-- ✅ **Recommendation Engine** - LangGraph-based agentic workflow
-- ✅ **Semantic Retrieval** - RAG via Pinecone Vector DB
+- ✅ **Recommendation Engine** - deterministic behavioral recommendation flow
+- ✅ **Semantic Retrieval** - Qdrant Cloud RAG storage and semantic query adapter
 - ✅ **Mesh API Integration** - All LLM calls routed through Mesh (mandatory)
 
-### Bonus Features (Implemented ⭐)
-- ⭐ **LangGraph Agent** - Explicit reasoning workflow with multiple nodes
-- ⭐ **APScheduler** - Scheduled daily email digest delivery
-- ⭐ **LangSmith Observability** - Full tracing of agent workflows
-- ⭐ **Smart Re-ranking** - Evaluate and refine retrieval results
-- ⭐ **Caching Layer** - Avoid redundant LLM calls
+### Planned Features
+- LangGraph agent orchestration
+- APScheduler daily email delivery
+- LangSmith observability
+- Advanced reranking and recommendation caching
 
 ---
 
@@ -141,7 +150,7 @@ SmartReco is a complete recommendation platform built for the **SmartReco Build 
 
 - Python 3.11+
 - PostgreSQL (or SQLite for development)
-- Pinecone API account (vector database)
+- Qdrant Cloud account and collection (vector database)
 - Mesh API key (mandatory for LLM access)
 - GitHub account (for Actions secrets)
 
@@ -173,10 +182,15 @@ MESH_API_KEY=rsk_your_mesh_api_key_here
 DATABASE_URL=postgresql://user:password@localhost:5432/smartreco
 # or for SQLite: DATABASE_URL=sqlite:///./smartreco.db
 
-# Pinecone Vector Database
-PINECONE_API_KEY=your_pinecone_api_key
-PINECONE_ENV=your_pinecone_environment
-PINECONE_INDEX_NAME=smartreco-products
+# Qdrant Cloud Vector Database
+QDRANT_URL=https://your-cluster.cloud.qdrant.io
+QDRANT_API_KEY=your_qdrant_api_key
+QDRANT_COLLECTION=my_reco_db
+
+# Mesh embeddings and optional LLM narratives
+MESH_BASE_URL=https://api.meshapi.ai/v1
+MESH_EMBEDDING_MODEL=openai/text-embedding-3-small
+ENABLE_LLM_RECOMMENDATIONS=false
 
 # JWT Secret
 JWT_SECRET_KEY=your_super_secret_jwt_key_here
@@ -195,16 +209,20 @@ LANGCHAIN_PROJECT=smartreco-2026
 
 ### 3. Initialize Database
 ```bash
-# Create tables
-python -m alembic upgrade head
-
-# Or for SQLite (dev):
-python src/database/db.py
+# Seed the SQL catalog and demo personas
+python seed.py
+python seed_demo.py
 ```
 
 ### 4. Run Locally
 ```bash
-uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
+python -m uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+Or seed and start the development server in one command:
+
+```bash
+python run.py
 ```
 
 API available at: **http://localhost:8000**
@@ -217,6 +235,14 @@ docker build -t smartreco .
 docker run -p 8000:8000 --env-file .env smartreco
 ```
 
+### 6. Run Tests
+
+```bash
+python -m pytest tests -q
+```
+
+The test suite uses an isolated in-memory SQLite database and does not call Mesh or Qdrant.
+
 ---
 
 ## 📁 Project Structure
@@ -226,6 +252,9 @@ smartreco-agentic-recommendation-system-2026/
 ├── src/
 │   ├── __init__.py
 │   ├── main.py                    # FastAPI app entry point
+│   ├── schemas.py                 # Shared Pydantic request/response models
+│   ├── security.py                # JWT and password helpers
+│   ├── deps.py                    # Bearer/cookie auth dependencies
 │   ├── config/
 │   │   └── settings.py            # Environment configuration
 │   ├── database/
@@ -246,21 +275,10 @@ smartreco-agentic-recommendation-system-2026/
 │   │   ├── product_service.py     # Product dual-write logic
 │   │   ├── event_service.py       # Event ingestion & aggregation
 │   │   ├── llm_service.py         # Mesh API LLM calls
-│   │   ├── vector_service.py      # Pinecone semantic retrieval
 │   │   └── recommendation_service.py # Core recommendation logic
-│   ├── agent/
-│   │   └── recommendation_agent.py # LangGraph agentic workflow
-│   ├── scheduler/
-│   │   └── tasks.py               # APScheduler jobs (email digests)
 │   ├── infrastructure/
-│   │   ├── cache/
-│   │   │   └── redis_cache.py     # Caching layer
-│   │   ├── email/
-│   │   │   └── email_service.py   # Email delivery
-│   │   ├── llm/
-│   │   │   └── mesh_client.py     # Mesh API wrapper
 │   │   ├── vector_store/
-│   │   │   └── pinecone_client.py # Pinecone integration
+│   │   │   └── qdrant_store.py     # Qdrant Cloud integration
 │   │   └── logging_config/
 │   │       └── config.py          # Logging setup
 │   ├── middleware/
@@ -283,10 +301,14 @@ smartreco-agentic-recommendation-system-2026/
 │   └── workflows/
 │       └── smartreco-checks.yml   # GitHub Actions CI/CD
 ├── tests/
+│   ├── conftest.py
 │   ├── test_auth.py
 │   ├── test_products.py
 │   ├── test_recommendations.py
 │   └── test_events.py
+├── seed.py                         # Seed the course catalog
+├── seed_demo.py                    # Seed demo personas and events
+├── run.py                          # Seed data and start the server
 ├── requirements.txt               # Python dependencies
 ├── Dockerfile                     # Docker configuration
 ├── .gitignore                     # Git ignore (includes .env)
@@ -318,14 +340,14 @@ response = client.chat.completions.create(
 )
 ```
 
-### Pinecone Setup (Vector Database)
-1. Create account at [Pinecone](https://www.pinecone.io/)
-2. Create index: `smartreco-products` (dimension: 1536 for OpenAI embeddings)
-3. Add API keys to `.env`
+### Qdrant Setup (Vector Database)
+1. Create a cluster at [Qdrant Cloud](https://cloud.qdrant.io/).
+2. Create or select a collection with 1536-dimensional cosine vectors.
+3. Add `QDRANT_URL`, `QDRANT_API_KEY`, and `QDRANT_COLLECTION=my_reco_db` to `.env`.
 
 When admin adds a product, it's automatically:
 1. Embedded via Mesh API
-2. Indexed in Pinecone
+2. Indexed in Qdrant Cloud
 3. Stored in PostgreSQL (dual-write)
 
 ### APScheduler Setup (Bonus - Daily Digests)
@@ -416,7 +438,7 @@ Authorization: Bearer {admin_token}
 
 # Automatic actions:
 # 1. Stored in PostgreSQL
-# 2. Embedded & indexed in Pinecone
+# 2. Embedded & indexed in Qdrant Cloud
 # 3. Available for recommendations immediately
 ```
 
@@ -424,11 +446,11 @@ Authorization: Bearer {admin_token}
 
 ## 🧠 Recommendation Engine Workflow
 
-The LangGraph agent executes this workflow:
+The planned LangGraph agent workflow is:
 
 1. **Analyze Activity**: Extract user's recent behavior (searches, views, time spent)
 2. **Build Query**: LLM generates optimal semantic search query
-3. **Retrieve**: Query Pinecone for top products matching user interests
+3. **Retrieve**: Query Qdrant for top products matching user interests
 4. **Re-rank**: Score and evaluate retrieval quality
 5. **Generate**: LLM creates personalized, persuasive narrative
 6. **Store**: Persist recommendation with reasoning & scores
@@ -442,9 +464,9 @@ The LangGraph agent executes this workflow:
 
 ---
 
-## 🎁 Bonus Features Included
+## 🔭 Planned Extensions
 
-### ⭐ LangGraph Agentic Workflow
+### LangGraph Agentic Workflow
 Explicit, observable reasoning pipeline with nodes for:
 - Activity analysis
 - Query generation
@@ -453,21 +475,21 @@ Explicit, observable reasoning pipeline with nodes for:
 - Narrative generation
 - Evaluation & persistence
 
-### ⭐ APScheduler Scheduled Delivery
+### APScheduler Scheduled Delivery
 Daily digest email at 9 AM with:
 - Summary of user's activity from yesterday
 - Personalized recommendations
 - Click-through links to products
 - Persuasive messaging tailored to their journey
 
-### ⭐ LangSmith Observability
+### LangSmith Observability
 Every agent workflow is traced:
 - Node execution time & outputs
 - LLM call details (tokens, model)
 - Retrieval quality metrics
 - Full audit trail for debugging
 
-### ⭐ Smart Re-ranking
+### Smart Re-ranking
 Post-retrieval evaluation:
 - Score products by user fit
 - Optionally refine query if results poor
@@ -523,7 +545,8 @@ heroku login
 heroku create smartreco-app
 heroku config:set MESH_API_KEY=rsk_...
 heroku config:set DATABASE_URL=postgresql://...
-heroku config:set PINECONE_API_KEY=...
+heroku config:set QDRANT_URL=...
+heroku config:set QDRANT_API_KEY=...
 git push heroku main
 heroku logs --tail
 ```
@@ -544,7 +567,7 @@ See respective cloud provider documentation.
 |-----------|-----------|
 | **Backend Framework** | FastAPI |
 | **Database** | PostgreSQL / SQLite |
-| **Vector Database** | Pinecone |
+| **Vector Database** | Qdrant Cloud |
 | **LLM Gateway** | Mesh API |
 | **Agent Framework** | LangGraph |
 | **Scheduler** | APScheduler |
@@ -559,7 +582,7 @@ See respective cloud provider documentation.
 
 - [Mesh API Docs](https://developers.meshapi.ai/docs/introduction/product-overview)
 - [LangGraph Docs](https://python.langchain.com/docs/langgraph)
-- [Pinecone Docs](https://docs.pinecone.io/)
+- [Qdrant Docs](https://qdrant.tech/documentation/)
 - [FastAPI Docs](https://fastapi.tiangolo.com/)
 - [APScheduler Docs](https://apscheduler.readthedocs.io/)
 
@@ -584,7 +607,7 @@ This project is submitted to the **SmartReco Build Challenge 2026**.
 
 - **Never commit `.env`** - use `.gitignore`
 - **Mesh API is mandatory** - all LLM calls must go through it
-- **Dual-write is critical** - products must sync SQL ↔ Vector DB
+- **Dual-write is critical** - products must sync SQL ↔ Qdrant Cloud
 - **Event tracking must be non-blocking** - batch & throttle on frontend
 - **Cache recommendations** - avoid redundant LLM calls
 
@@ -598,15 +621,15 @@ This project is submitted to the **SmartReco Build Challenge 2026**.
 - ✅ Behavioral event tracking (batched, non-blocking)
 - ✅ Dual-write product system (SQL + Vector DB)
 - ✅ Mesh API integration (mandatory)
-- ✅ Agentic recommendation engine (LangGraph)
-- ✅ Semantic retrieval (Pinecone RAG)
+- ✅ Deterministic behavioral recommendation engine
+- ✅ Qdrant Cloud semantic retrieval and product synchronization
 - ✅ Personalized narrative generation
 - ✅ Recommendation persistence
 - ✅ Smart refresh triggers
 - ✅ Caching layer for efficiency
-- ✅ LangGraph bonus (explicit agent workflow)
-- ✅ APScheduler bonus (scheduled delivery)
-- ✅ LangSmith bonus (full observability)
+- ⏳ LangGraph agent workflow
+- ⏳ APScheduler scheduled delivery
+- ⏳ LangSmith observability
 
 ---
 
